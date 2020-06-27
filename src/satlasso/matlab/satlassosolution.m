@@ -1,0 +1,74 @@
+function [x,y] = satlassosolution(Agood, Bgood, Asat, Bsat, lamarr, weights)
+
+    % This function solves the augmented lasso problem and returns
+    % y =  the refined resgressors
+    % x =  non refined regressors,
+    % given inputs: 
+    % Agood = the sequence corressponding to the "good" data 
+    % Bgood = the neutralization values corresponding to the "good" data
+    % Asat  = the sequence corresponding to the saturated data 
+    % Bsat  = the neutralization values corresponding to the saturated data 
+    % lamarr = the array of lambdas to use 
+
+    AT = Agood;
+    BT = Bgood;
+    
+    ATS = Asat;
+    BTS = Bsat;
+    
+    % concatenate good and saturated data to graph later
+    ATT = [AT; ATS];
+    BTT = [BT; BTS];
+
+    n = size(AT,2); % col space, max size of regressors
+
+    lam1 = lamarr(1);
+    lam2 = lamarr(2);
+    lam3 = lamarr(3);
+
+    msize = 1/length(BT); % size of the good data 
+
+%     cvx_clear
+%     cvx_quiet(true) 
+%     cvx_begin
+%         variable x(n)
+%         f =  lam1*(ATT*x-BTT)'*(ATT*x-BTT) + lam2*norm(x,1);
+%         minimize(f);
+%     cvx_end
+
+    cvx_clear
+    cvx_quiet(true) 
+    cvx_begin
+        variable x(n)
+%         f =   msize*lam1*norm(AT*x-BT, 2) ...
+%             + msize*lam2*norm(weights.*x,1) ...
+%             + lam3*max([-(ATS*x-BTS);0]);
+        f =   msize*lam1*norm(AT*x-BT, 2) ...
+            + msize*lam2*norm(x,1) ...
+            + lam3*max([-(ATS*x-BTS);0]);
+        minimize(f);
+    cvx_end
+    
+    for i=1:length(x)
+        if abs(x(i)) <= 1e-4
+            x(i) = 0;
+        end
+    end 
+
+    % Refinement step 
+    cvx_quiet(true) 
+    cvx_begin
+        variable y(n)
+        f =  (ATT*y-BTT)'*(ATT*y-BTT);
+        minimize(f);
+        subject to 
+        y.*[x==0]==0;
+    cvx_end
+
+    for i=1:length(y)
+        if abs(y(i)) <= 1e-4
+            y(i) = 0;
+        end
+    end 
+end
+
