@@ -1,44 +1,41 @@
-import pandas as pd 
-import seaborn as sb 
-import matplotlib.pyplot as plt 
+#!/usr/bin/env python
+# Tea Freedman-Susskind
+# Jonsson Computational Lab
+# 30 June 2020
+
+aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR','TRP', 'TYR','VAL']
+aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'Y','V']
+aa_dict = dict(zip(aa_single, aa_three))
+aa_tcid = dict(zip(aa_three, aa_single))
+
+pdb_files = '/directory/pdb/files/are/in'
+
+def pdb_to_output(pdb):
+    indivlist = pdb_files + 'individual_list.txt'
+    prevnum = 0
+    type_id = 0
+    aa = 3
+    chain = 4
+    residue_no = 5
+    with open(pdb, 'r') as f:
+        with open(indivlist, 'w') as g:
+            for line in f:
+                broken = line.split(" ")
+                broken = list(filter(None, broken))
+                if broken[type_id] == "ATOM" and broken[residue_no] != prevnum and len(broken) > 12:
+                    for amac in aa_tcid:
+                        if amac != broken[aa]:
+                            try:
+                                aa_tcid[broken[aa]]
+                            except KeyError:
+                                for amac in aa_tcid:
+                                    if amac in broken[aa]:
+                                        broken[aa] = amac
+                            to_file = aa_tcid[broken[aa]] + broken[chain] + broken[residue_no] + aa_tcid[amac] + ";\n"
+                            g.write(to_file)
+                prevnum = broken[residue_no]
 
 
-''' This function takes in a sequence and outputs all possible mutations in 
-    the string defined in the region vector. 
-'''
-aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR','TRP', 'TYR','VAL','STOP']
-aa_single = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'R','V','*']
-aa_dict = dict(zip(aa_three, aa_single))
-
-
-def mutate_protein(sequence_name): 
-    print(aa_dict)
-
-''' Read in list of sequence files and create a dataframe of  sequences 
-'''
-def read_sequence_files(files, type): 
-
-    sequences = pd.DataFrame()
-    for file in files: 
-        sequences = pd.read_csv(file)
-        sequences = pd.concat([sequences, tmp])
-    return sequences
-
-
-
-''' The process should go as follows '''
-
-ab_files_dir = '../data/antibody/'
-virus_files_dir = '../data/virus/'
-
-sequence_name ='aPDB'
-mutate_protein(sequence_name)
-
-''' 
-1. Read in antibody and virus bound structure pdb names
-2. Read in corresponding fasta file 
-3. Read in binding site file (optional) 
-4. Mutate every amino acid in every sequence output to mutation input file for FoldX. 
-5. Run FoldX command with input file.  Calculate dg on all combinations of mutations on: a) antibody structure unbound b) virus structure unbound c) antibody and virus structure bound 
-6. Calculate ddG based on Jonsson thesis derviation. 
-'''
+pdb = '7bz5'
+filename = pdb_files + pdb + '.pdb'
+pdb_to_output(filename)
