@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 
-filepath = '../data/'
+filepath = '../../data/'
 filename = 'nussenzweig_antibody_data_cleaned'
 
 df = pd.read_csv(filepath+filename+'.csv', sep=',', header=0)

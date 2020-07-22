@@ -19,9 +19,9 @@ def one_hot_encode(aa):
         return encoding
 
 filepath = '../data/'
-neut_filename = 'nussenzweig_antibody_data_cleaned_with_alignments'#'single_mut_effects_cleaned'#'kyratsous_neutralization_data'
+filename = 'nussenzweig_antibody_data_cleaned_with_alignments'#'single_mut_effects_cleaned'#'kyratsous_neutralization_data'
 
-df = pd.read_csv(filepath+neut_filename+'.csv', sep=',', header=0)
+df = pd.read_csv(filepath+filename+'.csv', sep=',', header=0)
 
 aamatrix = np.empty((0, len(df.sequences[0])*len(aalist)), int)
 for sequence in df.sequences:
@@ -30,4 +30,4 @@ for sequence in df.sequences:
         row = row + one_hot_encode(aa)
     aamatrix = np.vstack((aamatrix,row))
 
-np.savetxt(filepath+neut_filename+'_sparse_matrix'+'.csv', aamatrix, delimiter=',')
+np.savetxt(filepath+filename+'_sparse_matrix'+'.csv', aamatrix, delimiter=',')
