@@ -45,12 +45,13 @@ def pdb_to_list(pdb, spec_chain=''):
 
 
 def run_pos_scan(pdb_name, mut_list):
-    os.system("echo what up")
     os.system("cd /path/to/pdb/directory")
     big_string = ""
     for item in mut_list:
         big_string += item + ","
     big_string = big_string[:-1]
+    repair = "foldx --command=RepairPDB --pdb="+pdb_name+".pdb"
+    os.system(repair)
     command = "foldx --command=PositionScan --pdb="+pdb_name+".pdb --positions="+big_string +" --out-pdb=false"
     os.system("echo " + big_string)
     os.system(command)
