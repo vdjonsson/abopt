@@ -1,18 +1,26 @@
 #!/usr/bin/env python
 # Tea Freedman-Susskind
 # Jonsson Computational Lab
-# 16 July 2020
+# 28 July 2020
 
 
 import os
+import sys
 
 aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR','TRP', 'TYR','VAL']
 aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'Y','V']
 aa_1to3_dic = dict(zip(aa_single, aa_three))
 aa_3to1_dic = dict(zip(aa_three, aa_single))
 
-pdb_files = '/path/to/pdb/directory'
+pdb_files = os.getcwd()
 
+"""
+Format to Call:
+python3 cleaned_up_fitness.py <pdb name> <chain name>
+
+Example:
+python3 cleaned_up_fitness.py 6xcm H
+"""
 
 def pdb_to_list(pdb, spec_chain=''):
     prevnum = 0
@@ -38,24 +46,38 @@ def pdb_to_list(pdb, spec_chain=''):
                                             print(amac)
                                             broken[aa] = amac
                                             print(broken)
-                    to_list = aa_3to1_dic[broken[aa]] + broken[chain] + broken[residue_no] + 'a'
-                    lis.append(to_list)
-                    prevnum = broken[residue_no]
+                        to_list = aa_3to1_dic[broken[aa]] + broken[chain] + broken[residue_no] + 'a'
+                        lis.append(to_list)
+                        prevnum = broken[residue_no]
     return lis
 
 
 def run_pos_scan(pdb_name, mut_list):
-    os.system("cd /path/to/pdb/directory")
+    os.system("cd " + pdb_files)
     big_string = ""
     for item in mut_list:
         big_string += item + ","
     big_string = big_string[:-1]
     repair = "foldx --command=RepairPDB --pdb="+pdb_name+".pdb"
     os.system(repair)
-    command = "foldx --command=PositionScan --pdb="+pdb_name+".pdb --positions="+big_string +" --out-pdb=false"
+    command = "foldx --command=PositionScan --pdb="+pdb_name+"_Repair.pdb --positions="+big_string +" --out-pdb=false"
     os.system("echo " + big_string)
     os.system(command)
 
 
-l = pdb_files + 'pdbname.pdb'
-run_pos_scan('pdbname', pdb_to_list(l))
+
+if __name__ == "__main__":
+    args = sys.argv
+    pdb_len = 1
+    chain_len = 2
+    if len(args) > pdb_len:
+        pdb_name = args[pdb_len]
+        file_name = pdb_name + '.pdb'
+        os.system("echo " + pdb_name)
+        l = pdb_files + file_name
+        if len(args) > chain_len:
+                chain_name = chain_len
+                run_pos_scan(pdb_name, pdb_to_list(file_name, spec_chain=chain_name))
+        else:
+                run_pos_scan(pdb_name, pdb_to_list(file_name))
+
