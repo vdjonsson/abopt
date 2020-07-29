@@ -16,10 +16,10 @@ pdb_files = os.getcwd()
 
 """
 Format to Call:
-python3 cleaned_up_fitness.py <pdb name> <chain name>
+python3 set_up_and_run_posscan.py <pdb name> <chain name>
 
 Example:
-python3 cleaned_up_fitness.py 6xcm H
+python3 set_up_and_run_posscan.py 6xcm H 
 """
 
 def pdb_to_list(pdb, spec_chain=''):
@@ -52,14 +52,17 @@ def pdb_to_list(pdb, spec_chain=''):
     return lis
 
 
-def run_pos_scan(pdb_name, mut_list):
+def run_pos_scan(pdb_name, mut_list, repair = False):
     os.system("cd " + pdb_files)
     big_string = ""
     for item in mut_list:
         big_string += item + ","
     big_string = big_string[:-1]
-    repair = "foldx --command=RepairPDB --pdb="+pdb_name+".pdb"
-    os.system(repair)
+
+    if repair: 
+        repair = "foldx --command=RepairPDB --pdb="+pdb_name+".pdb"
+        os.system(repair)
+
     command = "foldx --command=PositionScan --pdb="+pdb_name+"_Repair.pdb --positions="+big_string +" --out-pdb=false"
     os.system("echo " + big_string)
     os.system(command)
@@ -70,13 +73,14 @@ if __name__ == "__main__":
     args = sys.argv
     pdb_len = 1
     chain_len = 2
+    repair = 3 
     if len(args) > pdb_len:
         pdb_name = args[pdb_len]
         file_name = pdb_name + '.pdb'
         os.system("echo " + pdb_name)
         l = pdb_files + file_name
         if len(args) > chain_len:
-                chain_name = chain_len
+                chain_name = sys.argv[chain_len]
                 run_pos_scan(pdb_name, pdb_to_list(file_name, spec_chain=chain_name))
         else:
                 run_pos_scan(pdb_name, pdb_to_list(file_name))
