@@ -45,7 +45,7 @@ seq_df.columns = rename_cols(seq_df)
 neut_df['igh_vdj_aa'] = seq_df.igh_vdj_aa
 neut_df['igl_vj_aa'] = seq_df.igl_vj_aa
 
-output_file = 'nussenzweig_antibody_data'
+output_file = 'NeutSeqData_C002-215'
 neut_df.to_csv(filepath+output_file+'_cleaned'+'.csv', header = True, index=False)
 
 # file = bloom
@@ -60,7 +60,7 @@ df.to_csv(filepath+filename_bloom+'_cleaned.csv', sep=',', header=True, index=Fa
 # file = regeneron
 
 db_filename = 'CoV-AbDab_270620'
-data_filename = 'kyratsous_neutralization_data'
+data_filename = 'NeutSeqData_REGN'
 
 database = pd.read_csv(filepath+db_filename+'.csv', header=0, sep=',')
 df = pd.read_csv(filepath+data_filename+'.csv', header=0, sep=',')

@@ -1,55 +1,44 @@
 import pandas as pd
 import numpy as np
-import satlasso_functions_cvx
-import sys
-from sklearn import linear_model
+from SatLasso import SatLasso, SatLassoCV
+from io_utils import read_file, output_sparse_matrix, create_coefs_dataframe, output_results, plot_predictors, plot_coefs, output_mapped_coefs
+from seqparser import seqparser, align_coefs
 
 # variables to update:
-# filepath (line 12)
-# filename (line 13)
-# y_colname (line 18)
-# saturated (line 21)
-# df_coef adjust_positions args
-
-aalist = ['A', 'R', 'N', 'D','C','Q','E','G','H', 'I','L','K','M', 'F','P','S', 'T', 'W', 'Y' ,'V']
-
-def adjust_positions(a, offset):
-    new_elements=[]
-    for element in a:
-        pos = int(element[1:len(element)])+offset
-        new_elements.append(element[0]+str(pos))
-    return new_elements
+# filepath
+# filename
+# y_colname
+# lambdas to test
+# offset
 
 filepath = '../data/'
-filename = 'nussenzweig_antibody_data_cleaned_with_alignments'#'kyratsous_neutralization_data''single_mut_effects_cleaned' 'combined_single_mut_effects_cleaned_foldx_6vw1'
+filename = 'NeutSeqData_VH3-53_66_aligned'#'NeutSeqData_C002-215_cleaned_aligned'
+heavy_chain = 'VH or VHH'#'igh_vdj_aa'
+light_chain = 'VL'#'igl_vj_aa'
+id_col = 'Name'#'antibody_id'
+y_colname = 'IC50_ngml'#'sars_cov_2_ic50_ngml'
+offset = 0
 
-df = pd.read_csv(filepath+filename+'.csv', sep=',', header=0)
-sparse_matrix = np.genfromtxt(filepath+filename+'_sparse_matrix.csv', delimiter=',')
+df = read_file(filepath, filename)
+sparse_matrix = seqparser(df)
+output_sparse_matrix(filepath, filename, sparse_matrix)
 
-y_colname = sys.argv[1]
-y = df[y_colname].values
+y = df[y_colname].values.astype(float)
 
-saturated = True
-if saturated:
-    k=5
-    lmbdas1_to_test = np.linspace(start=1, stop=10, num=3)
-    lmbdas2_to_test = np.linspace(start=1, stop=10, num=3)
-    lmbdas3_to_test = [10]# np.linspace(start=1, stop=10, num=3)
-    coefficients = satlasso_functions_cvx.satlasso_solve(sparse_matrix, np.log(y).tolist(), lmbdas1_to_test, lmbdas2_to_test, lmbdas3_to_test, k)
-    # predictors = np.add(np.matmul(sparse_matrix, coefficients[0:len(coefficients)-1]),[coefficients[len(coefficients)-1]]*len(sparse_matrix))
-    log_predictors = np.add(np.matmul(sparse_matrix, coefficients[0:len(coefficients)-1]),[coefficients[len(coefficients)-1]]*len(sparse_matrix))
-    predictors = list(map(lambda x: np.exp(x), log_predictors))
-    
-else:
-    lasso_cv = linear_model.Lars()
-    lasso_cv.fit(sparse_matrix,y)
-    predictors = lasso_cv.predict(sparse_matrix)
-    coefficients = lasso_cv.coef_.tolist()+[lasso_cv.intercept_]
+lmbdas1_to_test = np.linspace(start = 1, stop = 10, num=5)
+lmbdas2_to_test = np.linspace(start = 1, stop = 10, num=5)
+lmbdas3_to_test = np.linspace(start = 5, stop = 10, num=5)
+satlassoCV = SatLassoCV(lambda_1s = lmbdas1_to_test, lambda_2s = lmbdas2_to_test, lambda_3s = lmbdas3_to_test, saturation='mode', cv=3)
+satlassoCV.fit(sparse_matrix, y)
+coefficients = satlassoCV.coef_
+predictors = satlassoCV.predict(sparse_matrix)
+print(satlassoCV.lambda_1_, satlassoCV.lambda_2_, satlassoCV.lambda_3_)
+# log_predictors = satlassoCV.predict(sparse_matrix)
+# predictors = list(map(lambda x: np.exp(x), log_predictors))
 
-df[y_colname+'_predicted'] = predictors
-df.to_csv(filepath+filename+'_with_'+y_colname+'_predictors.csv', sep=',', index=False, header=True)
-
-aa_positions = np.array([[s+str(i+1) for s in aalist] for i in range(0,int(len(sparse_matrix[0])/len(aalist)))]).flatten()
-df_coef = pd.DataFrame(data=coefficients[0:len(coefficients)-1], index = adjust_positions(aa_positions, 0)).T
-df_coef.to_csv(filepath+filename+'_'+y_colname+'_coefficients'+'.csv', sep=',', index=False, header=True)
-
+df_coefs = create_coefs_dataframe(coefficients, offset)
+output_results(filepath, filename, y_colname, df, predictors, df_coefs)
+mapped_coefs = map_coefs(df, df_coefs, heavy_chain, light_chain, id_col)
+output_mapped_coefs(filepath, filename, mapped_coefs)
+plot_predictors(filepath, '../figs/', filename, y_colname)
+plot_coefs(filepath, '../figs/', filename, y_colname)

@@ -1,16 +1,23 @@
 import numpy as np
 import pandas as pd
 
-# variables to update:
-# filepath (line 35)
-# neut_filename (line 36)
-# seq_filename (line 37)
-# colname (line 44)
-# make_sequences args (line 46)
-
 aalist = ['A', 'R', 'N', 'D','C','Q','E','G','H', 'I','L','K','M', 'F','P','S', 'T', 'W', 'Y' ,'V']
 
 def one_hot_encode(aa):
+    """
+    One-hot encode an amino acid according to amino acid list (aalist) specified above.
+    
+    Parameters
+    ----------
+    aa : str
+        One-character representation of an amino acid
+    
+    Returns
+    ----------
+    encoding : ndarray of shape (len_aalist,)
+        One-hot encoding of amino acid
+    """
+    
     if aa not in aalist:
         return [0]*len(aalist)
     else:
@@ -18,16 +25,141 @@ def one_hot_encode(aa):
         encoding[aalist.index(aa)] = 1
         return encoding
 
-filepath = '../data/'
-filename = 'nussenzweig_antibody_data_cleaned_with_alignments'#'single_mut_effects_cleaned'#'kyratsous_neutralization_data'
+def seqparser(df, seq_col = 'sequence'):
+    """
+    Parse amino acid sequences in dataframe; create a one-hot encoded matrix of sequences.
+    
+    Note: amino acid sequences must have the same length in order to be parsed.
+    
+    Parameters
+    ----------
+    df : pandas DataFrame
+        Dataframe containing amino acid sequences to parse
+    seq_col : str, default = 'sequence'
+        Column in dataframe with amino acid sequences
+    
+    Returns
+    ----------
+    aamatrix : numpy array of shape (n_sequences, (len_sequence * len_aalist))
+        One-hot encoded matrix of amino acid sequences in dataframe
+    """
+    
+    aamatrix = np.empty((0, len(df[seq_col][0])*len(aalist)), int)
+    for seq in df[seq_col]:
+        row = []
+        for aa in seq:
+            row = row + one_hot_encode(aa)
+        aamatrix = np.vstack((aamatrix,row))
+    return aamatrix
 
-df = pd.read_csv(filepath+filename+'.csv', sep=',', header=0)
+def adjust_positions(a, offset=0):
+    """
+    Utility function to adjust position notation in list of amino acid positions with form /
+        <amino acid><position>, for example: A34.
+    
+    Parameters
+    ----------
+    a : ndarray of shape (n_positions,)
+        Amino acid positions to adjust
+    offset : int, default = 0
+        Integer change in each amino acid position
+    
+    Returns
+    ----------
+    new_elements : ndarray of shape (n_positions,)
+        Amino acid positions adjusted
+    """
+    
+    if offset == 0:
+        return a
+        
+    new_elements=[]
+    for element in a:
+        pos = int(element[1:len(element)])+offset
+        new_elements.append(element[0]+str(pos))
+    return new_elements
 
-aamatrix = np.empty((0, len(df.sequences[0])*len(aalist)), int)
-for sequence in df.sequences:
-    row = []
-    for aa in sequence:
-        row = row + one_hot_encode(aa)
-    aamatrix = np.vstack((aamatrix,row))
+def create_coef_matrix(coefs):
+    """
+    Utility function for map_coefs function.
+    
+    Creates pandas DataFrame with indices : amino acids, columns : positions in sequence /
+        and values : coefficients
+    
+    Note: Intended to be used with coefficient output from regression package /
+        (ex. SatLasso, SatLassoCV)
+    
+    Parameters
+    ----------
+    coefs : pandas DataFrame
+        Coefficients with indices : amino acid positions of form <amino acid><position>
+    
+    Returns
+    ----------
+    aa_posmap : pandas DataFrame
+        Coefficients with indices : amino acids and columns : positions in sequence
+    """
+    
+    aa_posmap = pd.DataFrame(index=aalist)
+    for i in range(0, int(len(coefs)/len(aalist))):
+        index = coefs.index[i*len(aalist)][1:]
+        aa_posmap[index] = coefs.iloc[:,0][i*len(aalist):(i+1)*len(aalist)].values
+    return aa_posmap
 
-np.savetxt(filepath+filename+'_sparse_matrix'+'.csv', aamatrix, delimiter=',')
+def map_coefs(df, coefs, heavy_chain_name, light_chain_name, id_col):
+    """
+    Maps aligned sequences of amino acids back to original non-aligned sequences
+    
+    Note: Intended to be used with coefficient output from regression package /
+        (ex. SatLasso, SatLassoCV)
+    
+    Parameters
+    ----------
+    df : pandas DataFrame
+        Metadata including amino acid sequences for heavy and light chains, identifying name /
+            of each heavy/light chain pair
+    coefs : pandas DataFrame
+        Coefficients with indices : amino acid positions of form <amino acid><position>
+    heavy_chain_name : str
+        Name of column for heavy chain sequences in df.
+    light_chain_name : str
+        Name of column for light chain sequences in df.
+    id_col : str
+        Name of column for identifier for each heavy/light chain sequences /
+            (ex. name of antibody)
+    
+    Returns
+    ----------
+    coefs_df : pandas DataFrame
+        Coefficients mapped back to amino acid in each heavy/light chain sequence with /
+            MultiIndex : identifying_name, location, chain, amino_acid and columns: /
+            wild_type and coefficient
+    """
+    
+    coefs_df = pd.DataFrame(columns = [id_col, 'location', 'chain', 'aa', 'wild_type', 'coefficient'])
+    coefs_df.set_index([id_col, 'location', 'chain', 'aa'], inplace=True)
+
+    aa_posmap = create_coef_matrix(coefs)
+
+    len_heavy_chain = len(df[heavy_chain_name+'_aligned'][0])
+    for antibody in df[id_col]:
+        sequence = df[heavy_chain_name][df[id_col] == antibody].item()
+        pos = 0
+        for i in range(0, len(sequence)):
+            if sequence[i] in aalist:
+                wt = [False] * len(aalist)
+                wt[aalist.index(sequence[i])] = True
+                coefs_df = coefs_df.append(pd.DataFrame.from_dict({id_col: [antibody]*len(aalist), 'location': [str(pos)]*len(aalist), 'chain': ['H']*len(aalist), 'aa': aalist, 'wild_type': wt, 'coefficient': aa_posmap[str(i)]}, orient = 'columns').set_index([id_col, 'location', 'chain', 'aa']))
+                pos = pos+1
+
+    for antibody in df[id_col]:
+        sequence = df[light_chain_name][df[id_col] == antibody].item()
+        pos = 0
+        for i in range(0, len(sequence)):
+            if sequence[i] in aalist:
+                wt = [False] * len(aalist)
+                wt[aalist.index(sequence[i])] = True
+                coefs_df = coefs_df.append(pd.DataFrame.from_dict({id_col: [antibody]*len(aalist), 'location': [str(pos)]*len(aalist), 'chain': ['L']*len(aalist), 'aa': aalist, 'wild_type': wt, 'coefficient': aa_posmap[str(i+len_heavy_chain)]}, orient = 'columns').set_index([id_col, 'location', 'chain', 'aa']))
+                pos = pos+1
+                
+    return coefs_df

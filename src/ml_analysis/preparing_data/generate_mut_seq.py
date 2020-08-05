@@ -23,16 +23,21 @@ def make_sequences(variants, aa_sequence, include_wildtype=False, offset=0):
     return variant_sequences
 
 filepath = '../../data/'
-data_filename = 'single_mut_effects_cleaned'#'kyratsous_neutralization_data'
+data_filename = 'single_mut_effects_cleaned'
 fasta_filename = 'rcsb_pdb_6M0J'
+name_to_find = 'receptor binding domain'
 
-f = open(filepath+fasta_filename+'.fasta', 'r')
-f.readline()
-aa_sequence = f.readline().strip('\n')
-f.close()
+with open(filepath+fasta_filename+'.fasta', 'r') as f:
+    found = False
+    for line in f:
+        if found:
+            aa_sequence = line.strip('\n')
+            break
+        if line.find(name_to_find) >=0:
+            found = True
 
-colname = 'mutation_RBD' #'variant'
+colname = 'mutation_RBD' 
 df = pd.read_csv(filepath+data_filename+'.csv', sep=',', header=0)
-df['sequences'] = make_sequences(df[colname], aa_sequence, include_wildtype=False, offset=12)
+df['sequence'] = make_sequences(df[colname], aa_sequence, include_wildtype=False, offset=12)
 
-df.to_csv(filepath+data_filename+'_with_sequences.csv', sep=',', header=True, index=False)
+df.to_csv(filepath+data_filename+'.csv', sep=',', header=True, index=False)
