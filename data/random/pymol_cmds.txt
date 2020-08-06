@@ -1,0 +1,3 @@
+remove chain H;remove chain L;remove chain N;remove chain S;remove chain A; remove chain B;
+get_chains
+save /Users/vjonsson/Google Drive/data/repository/gibbsfitness/data/pdb/C105/

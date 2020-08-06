@@ -1,0 +1,2 @@
+foldx --command=RepairPDB --pdb=6XCM_Repair_YH58N_Repair_less_ab.pdb
+foldx --command=BuildModel --pdb=6XCM_Repair.pdb --mutant-file=individual_list.txt
