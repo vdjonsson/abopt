@@ -25,7 +25,7 @@ def one_hot_encode(aa):
         encoding[aalist.index(aa)] = 1
         return encoding
 
-def seqparser(df, seq_col = 'sequence'):
+def seqparser(df, seq_col):
     """
     Parse amino acid sequences in dataframe; create a one-hot encoded matrix of sequences.
     
@@ -51,33 +51,6 @@ def seqparser(df, seq_col = 'sequence'):
             row = row + one_hot_encode(aa)
         aamatrix = np.vstack((aamatrix,row))
     return aamatrix
-
-def adjust_positions(a, offset=0):
-    """
-    Utility function to adjust position notation in list of amino acid positions with form /
-        <amino acid><position>, for example: A34.
-    
-    Parameters
-    ----------
-    a : ndarray of shape (n_positions,)
-        Amino acid positions to adjust
-    offset : int, default = 0
-        Integer change in each amino acid position
-    
-    Returns
-    ----------
-    new_elements : ndarray of shape (n_positions,)
-        Amino acid positions adjusted
-    """
-    
-    if offset == 0:
-        return a
-        
-    new_elements=[]
-    for element in a:
-        pos = int(element[1:len(element)])+offset
-        new_elements.append(element[0]+str(pos))
-    return new_elements
 
 def create_coef_matrix(coefs):
     """
@@ -106,7 +79,7 @@ def create_coef_matrix(coefs):
         aa_posmap[index] = coefs.iloc[:,0][i*len(aalist):(i+1)*len(aalist)].values
     return aa_posmap
 
-def map_coefs(df, coefs, heavy_chain_name, light_chain_name, id_col):
+def map_coefs(df, coefs, heavy_chain_name, light_chain_name, id_col, seq_col):
     """
     Maps aligned sequences of amino acids back to original non-aligned sequences
     
@@ -136,30 +109,47 @@ def map_coefs(df, coefs, heavy_chain_name, light_chain_name, id_col):
             wild_type and coefficient
     """
     
-    coefs_df = pd.DataFrame(columns = [id_col, 'location', 'chain', 'aa', 'wild_type', 'coefficient'])
-    coefs_df.set_index([id_col, 'location', 'chain', 'aa'], inplace=True)
+    if heavy_chain_name is not None and light_chain_name is not None:
+        coefs_df = pd.DataFrame(columns = [id_col, 'location', 'chain', 'aa', 'wild_type', 'coefficient'])
+        coefs_df.set_index([id_col, 'location', 'chain', 'aa'], inplace=True)
 
-    aa_posmap = create_coef_matrix(coefs)
+        aa_posmap = create_coef_matrix(coefs)
 
-    len_heavy_chain = len(df[heavy_chain_name+'_aligned'][0])
-    for antibody in df[id_col]:
-        sequence = df[heavy_chain_name][df[id_col] == antibody].item()
-        pos = 0
-        for i in range(0, len(sequence)):
-            if sequence[i] in aalist:
-                wt = [False] * len(aalist)
-                wt[aalist.index(sequence[i])] = True
-                coefs_df = coefs_df.append(pd.DataFrame.from_dict({id_col: [antibody]*len(aalist), 'location': [str(pos)]*len(aalist), 'chain': ['H']*len(aalist), 'aa': aalist, 'wild_type': wt, 'coefficient': aa_posmap[str(i)]}, orient = 'columns').set_index([id_col, 'location', 'chain', 'aa']))
-                pos = pos+1
+        len_heavy_chain = len(df[heavy_chain_name][0])
+        for antibody in df[id_col]:
+            sequence = df[heavy_chain_name][df[id_col] == antibody].item()
+            pos = 0
+            for i in range(0, len(sequence)):
+                if sequence[i] in aalist:
+                    wt = [False] * len(aalist)
+                    wt[aalist.index(sequence[i])] = True
+                    coefs_df = coefs_df.append(pd.DataFrame.from_dict({id_col: [antibody]*len(aalist), 'location': [str(pos)]*len(aalist), 'chain': ['H']*len(aalist), 'aa': aalist, 'wild_type': wt, 'coefficient': aa_posmap[str(i)]}, orient = 'columns').set_index([id_col, 'location', 'chain', 'aa']))
+                    pos = pos+1
 
-    for antibody in df[id_col]:
-        sequence = df[light_chain_name][df[id_col] == antibody].item()
-        pos = 0
-        for i in range(0, len(sequence)):
-            if sequence[i] in aalist:
-                wt = [False] * len(aalist)
-                wt[aalist.index(sequence[i])] = True
-                coefs_df = coefs_df.append(pd.DataFrame.from_dict({id_col: [antibody]*len(aalist), 'location': [str(pos)]*len(aalist), 'chain': ['L']*len(aalist), 'aa': aalist, 'wild_type': wt, 'coefficient': aa_posmap[str(i+len_heavy_chain)]}, orient = 'columns').set_index([id_col, 'location', 'chain', 'aa']))
-                pos = pos+1
+        for antibody in df[id_col]:
+            sequence = df[light_chain_name][df[id_col] == antibody].item()
+            pos = 0
+            for i in range(0, len(sequence)):
+                if sequence[i] in aalist:
+                    wt = [False] * len(aalist)
+                    wt[aalist.index(sequence[i])] = True
+                    coefs_df = coefs_df.append(pd.DataFrame.from_dict({id_col: [antibody]*len(aalist), 'location': [str(pos)]*len(aalist), 'chain': ['L']*len(aalist), 'aa': aalist, 'wild_type': wt, 'coefficient': aa_posmap[str(i+len_heavy_chain)]}, orient = 'columns').set_index([id_col, 'location', 'chain', 'aa']))
+                    pos = pos+1
+    
+    else:
+        coefs_df = pd.DataFrame(columns = [id_col, 'location', 'aa', 'wild_type', 'coefficient'])
+        coefs_df.set_index([id_col, 'location', 'aa'], inplace=True)
+
+        aa_posmap = create_coef_matrix(coefs)
+        
+        for antibody in df[id_col]:
+            sequence = df[seq_col][df[id_col] == antibody].item()
+            pos = 0
+            for i in range(0, len(sequence)):
+                if sequence[i] in aalist:
+                    wt = [False] * len(aalist)
+                    wt[aalist.index(sequence[i])] = True
+                    coefs_df = coefs_df.append(pd.DataFrame.from_dict({id_col: [antibody]*len(aalist), 'location': [str(pos)]*len(aalist), 'aa': aalist, 'wild_type': wt, 'coefficient': aa_posmap[str(i)]}, orient = 'columns').set_index([id_col, 'location', 'aa']))
+                    pos = pos+1
                 
     return coefs_df
