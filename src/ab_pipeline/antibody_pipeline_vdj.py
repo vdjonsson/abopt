@@ -47,7 +47,7 @@ def construct_positionscan_string (pdb_name, ab_pos, pdb_loc):
     # check to see pdb_name and ab_pos is same 
     check = (ab_pos.antibody_id.unique() == pdb_loc.antibody_id.unique())
     if check == False:
-        print('Not matching atnibody')
+        print('Not matching antibody')
         exit()
 
     merged = ab_pos.join(pdb_loc, on='fasta_location', how = 'left', lsuffix='_abpos')
@@ -80,12 +80,12 @@ def read_pdb_locations(ab_name):
 def run_position_scan (ab_name, pdb_name, pos_scan):
 
     ab_path = pdb_path + ab_name + '/'
-
+    out_path = data_path + 'ddg/' + ab_name + '/'
     print('Running position scan')
     print(ab_path)
     print (pos_scan)
     command = foldx_path + "foldx --command=PositionScan --pdb-dir=" + ab_path + " --pdb=" + pdb_name
-    command = command + " --positions="+pos_scan +" --out-pdb=false"
+    command = command + " --positions="+ pos_scan +" --out-pdb=false  --output-dir=" + out_path
     print(command)
     os.system(command)
 
@@ -173,14 +173,17 @@ f = 'nussenzweig_antibody_data_cleaned_with_alignments_mapped_back_sars_cov_2_ic
 ab_name = 'B38'
 p1 = '7bz5_Repair'
 
-#ab_name = 'CB6'
-#p1 = '7c01_Repair'
+ab_name = 'CB6'
+p1 = '7c01_Repair'
 
-#ab_name = 'CV30'
-#p1 = '6xe1_Repair'
-
-
+ab_name = 'CV30'
+p1 = '6xe1_Repair'
 f = 'NeutSeqData_VH3-53_66_aligned_mapped_coefficients.csv'
+
+ab_name = 'CC12.1'
+p1 = '6xc3_CC12.1_Repair'
+
+
 
 calculate_ddgs_from_estimator_coefficients(f, ab_name = ab_name, pdb_struct=p1 +'.pdb')
 #calculate_ddgs_from_estimator_coefficients(f, ab_name = ab_name, pdb_struct=p1+'_less_virus_Repair.pdb')
