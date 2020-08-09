@@ -1,6 +1,7 @@
 import pandas as pd
 import seaborn as sb 
 import os 
+import sys 
 
 data_path = '../../data/'
 estimator_path = data_path + 'estimator/'
@@ -14,7 +15,6 @@ aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 
 aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'Y','V']
 aa_1to3_dic = dict(zip(aa_single, aa_three))
 aa_3to1_dic = dict(zip(aa_three, aa_single))
-
 
 def read_ddg_file(pdb_name, header=None):
 
@@ -152,10 +152,10 @@ def write_to_mutations_file(mutations, mutations_filename):
 # TEA: docstring everything
 # TEA:  create a separate main function and file with command line arguments  
 # TEA: Estimator file, input as command line argument 
-f = 'nussenzweig_antibody_data_cleaned_with_alignments_mapped_back_sars_cov_2_ic50_ngml_coefficients.csv'
+#f = 'nussenzweig_antibody_data_cleaned_with_alignments_mapped_back_sars_cov_2_ic50_ngml_coefficients.csv'
 
 # TEA: PDB file, input as command line argument 
-p1  = '6XCM.pdb'
+#p1  = '6XCM.pdb'
 
 # TEA: Remove virus from p1, and name xx_less_virus.pdb 
 # Repair both structures, output is xx_Repair.pdb and xx_less_virus_Repair.pdb
@@ -165,27 +165,26 @@ p1  = '6XCM.pdb'
 # Calculate ddgs for mutations on these structures, given bound and unbound structures  
 # These mutations come from the estimator that Natalie produced. This is used as input to potential mutations
 
+#ab_name = 'C105'
+#p1  = '6XCM_Repair'
+#f = 'nussenzweig_antibody_data_cleaned_with_alignments_mapped_back_sars_cov_2_ic50_ngml_coefficients.csv'
 
-ab_name = 'C105'
-p1  = '6XCM_Repair'
-f = 'nussenzweig_antibody_data_cleaned_with_alignments_mapped_back_sars_cov_2_ic50_ngml_coefficients.csv'
+#ab_name = 'B38'
+#p1 = '7bz5_Repair'
 
-ab_name = 'B38'
-p1 = '7bz5_Repair'
+#ab_name = 'CB6'
+#p1 = '7c01_Repair'
 
-ab_name = 'CB6'
-p1 = '7c01_Repair'
+#ab_name = 'CV30'
+#p1 = '6xe1_Repair'
+#f = 'NeutSeqData_VH3-53_66_aligned_mapped_coefficients.csv'
 
-ab_name = 'CV30'
-p1 = '6xe1_Repair'
-f = 'NeutSeqData_VH3-53_66_aligned_mapped_coefficients.csv'
-
-ab_name = 'CC12.1'
-p1 = '6xc3_CC12.1_Repair'
-
+#ab_name = 'CC12.1'
+#p1 = '6xc3_CC12.1_Repair'
 
 
-calculate_ddgs_from_estimator_coefficients(f, ab_name = ab_name, pdb_struct=p1 +'.pdb')
+
+#calculate_ddgs_from_estimator_coefficients(f, ab_name = ab_name, pdb_struct=p1 +'.pdb')
 #calculate_ddgs_from_estimator_coefficients(f, ab_name = ab_name, pdb_struct=p1+'_less_virus_Repair.pdb')
 
 # Get the mutations needed to  optimize antibody binding, these are just estimator locations with coefficients < -0.4 
@@ -223,13 +222,24 @@ calculate_ddgs_from_estimator_coefficients(f, ab_name = ab_name, pdb_struct=p1 +
 #run_position_scan (p2_m, p2_m, posscan_str)
 
 # Run position scan on p1_wt and p2_wt
-p1_wt  = '6XCM_Repair' # repaired wt antibody 
+#p1_wt  = '6XCM_Repair' # repaired wt antibody 
 # TEA: remove the antibody from this structure and save to _less_ab.pdb 
-p2_wt_nr  = '6XCM_Repair_less_ab'
+#p2_wt_nr  = '6XCM_Repair_less_ab'
 # Repair 6XCM_Repair_less_ab, output will be 6XCM_Repair_less_ab_Repair.pdb
 # run_repair_model(p2_wt_nr, p2_wt_nr)
-p2_wt = '6XCM_Repair_less_ab_Repair.pdb'
+#p2_wt = '6XCM_Repair_less_ab_Repair.pdb'
 
 #run_position_scan (p1_wt, p1_wt, posscan_str)
 #run_position_scan (p2_wt, p2_wt, posscan_str)
 
+
+if __name__ == "__main__":
+    args = sys.argv
+    ab_name = 1
+    pdb_name = 2
+    f = 3
+
+    ab_name = args[1]
+    pdb_name = args[2]
+    f = args[3]
+    calculate_ddgs_from_estimator_coefficients(f, ab_name = ab_name, pdb_struct=pdb_name +'.pdb')
