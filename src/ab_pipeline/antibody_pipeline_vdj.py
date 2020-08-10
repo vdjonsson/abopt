@@ -17,11 +17,44 @@ aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 
 aa_1to3_dic = dict(zip(aa_single, aa_three))
 aa_3to1_dic = dict(zip(aa_three, aa_single))
 
+
+def convert_pdb_to_list(ab_name, pdb_name, spec_chain='C' , min_res=400, max_res=520):
+    prevnum , type_id = 0,0
+    aa,chain,residue_no = 3,4,5
+    lis = []
+    pdb = pdb_path + ab_name + '/repaired/' + pdb_name +'.pdb' 
+    with open(pdb, 'r') as f:
+        for line in f:
+                broken = line.split(" ")
+                broken = list(filter(None, broken))
+                if broken[type_id] == "ATOM" and broken[residue_no] != prevnum and broken[residue_no].isnumeric():
+                    if not spec_chain or (spec_chain and spec_chain == broken[chain]):
+                        for amac in aa_3to1_dic:
+                            if amac != broken[aa]:
+                                try:
+                                    aa_3to1_dic[broken[aa]]
+                                except KeyError:
+                                    print(broken)
+                                    for amac in aa_3to1_dic:
+                                        if amac in broken[aa]:
+                                            print(amac)
+                                            broken[aa] = amac
+                                            print(broken)
+                        to_list = aa_3to1_dic[broken[aa]] + broken[chain] + broken[residue_no] + 'a'
+
+                        if (int(broken[residue_no]) >= min_res and int(broken[residue_no])<= max_res):
+                            lis.append(to_list)
+                        
+                        prevnum = broken[residue_no]
+
+    return lis
+
+
 def read_ddg_file(ab_name,pdb_name, header=None):
 
     prefix='PS_'
     suffix ='_scanning_output.txt'
-    df = pd.read_table(out_path +ab_name +'/'+ prefix + pdb_name +suffix,header=header)
+    df = pd.read_table(pdb_path +ab_name +'/repaired/'+ prefix + pdb_name +suffix,header=header)
     df = df.rename(columns= {0:'mut', 1:'dg'})
     return df
 
@@ -87,14 +120,14 @@ def read_pdb_locations(ab_name):
 
 def run_position_scan (ab_name, pdb_name, pos_scan):
 
-    ab_path = pdb_path + ab_name + '/'
-    out_path = out_path + ab_name + '/'
+    ab_path = pdb_path + ab_name + '/repaired/'
+    out_dir = out_path + ab_name + '/'
 
     print('Running position scan')
     print(ab_path)
     print (pos_scan)
     command = foldx_path + "foldx --command=PositionScan --pdb-dir=" + ab_path + " --pdb=" + pdb_name
-    command = command + " --positions="+ pos_scan +" --out-pdb=false  --output-dir=" + out_path
+    command = command + " --positions="+ pos_scan +" --out-pdb=false  --output-dir=" + out_dir
     print(command)
     os.system(command)
 
@@ -125,7 +158,7 @@ def rename_pdb_files(ab_name, pdb_name, mutations):
 def run_repair_model(ab_name, pdb_name):
 
     ab_path = pdb_path + ab_name + '/'
-    out_path = pdb_path + ab_name + '/'
+    out_path = pdb_path + ab_name + '/repaired/'
     print(pdb_name)
     command = foldx_path + "foldx --command=RepairPDB --pdb-dir=" + ab_path + " --pdb=" + pdb_name
     command = command +  " --output-dir=" + out_path
@@ -285,9 +318,17 @@ if __name__ == "__main__":
     args = sys.argv
     ab_name = args[1]
     pdb_name = args[2]
+    chain_name = args[3]
+
     less_str = '_less_virus_Repair'
 
     f = 'NeutSeqData_VH3-53_66_aligned_mapped_coefficients.csv'
     #calculate_ddgs_from_estimator_coefficients(f, ab_name = ab_name, pdb_struct=pdb_name +'.pdb')
-    build_optimal_antibody_structure_mutations(ab_name,pdb_name, pdb_name+less_str, upper_bound_ddg = -0.4)
+    #build_optimal_antibody_structure_mutations(ab_name,pdb_name, pdb_name+less_str, upper_bound_ddg = -0.4)
+    
+    pos_list = convert_pdb_to_list(ab_name, pdb_name, spec_chain=chain_name)
+    pos_scan =  ",".join(pos_list)
+    run_position_scan (ab_name, pdb_name + '.pdb', pos_scan)
+    
+    #run_pos_scan(ab_name, pdb_name, convert_pdb_to_list(ab_name, pdb_name, spec_chain=chain_name))
     
