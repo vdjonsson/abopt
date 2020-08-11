@@ -46,16 +46,15 @@ def convert_pdb_to_list(ab_name, pdb_name, spec_chain='C' , min_res=400, max_res
                             lis.append(to_list)
                         
                         prevnum = broken[residue_no]
-
     return lis
 
-
-def read_ddg_file(ab_name,pdb_name, header=None):
-
+def read_ddg_file(ab_name,pdb_name, header=None, scan_type='virus'):
+    ddg_path = out_path + ab_name + '/' 
     prefix='PS_'
+    scan_type = '_' + scan_type
     suffix ='_scanning_output.txt'
-    df = pd.read_table(pdb_path +ab_name +'/repaired/'+ prefix + pdb_name +suffix,header=header)
-    df = df.rename(columns= {0:'mut', 1:'dg'})
+    df = pd.read_table(ddg_path + prefix + pdb_name +scan_type + suffix,header=header)
+    df = df.rename(columns= {0:'mut_chain', 1:'dg'})
     return df
 
 def read_estimator(filename, ab):
@@ -67,15 +66,18 @@ def read_estimator(filename, ab):
         retval = False
     return retval, dfss 
 
-def calculate_ddg_bind(ab_name,p, p_less):
+def calculate_ddg_bind(ab_name,p, p_less, scan_type='virus', mut_name=''):
 
-    dg1 = read_ddg_file(ab_name,pdb_name=p,header=None)
-    dg2 = read_ddg_file(ab_name, pdb_name=p_less, header=None)
-    ddg = pd.merge(dg1, dg2, on='mut')
-    ddg_name = 'ddg'
-    ddg[ddg_name] = ddg['dg_x'] -ddg['dg_y']
-    ddg.to_csv('./ddG_' + p +'_' + p_less +'.csv')
-    return ddg[['mut', 'ddg']]
+    ddg_out_path = out_path 
+    dg1 = read_ddg_file(ab_name,pdb_name=p,header=None, scan_type=scan_type)
+    dg2 = read_ddg_file(ab_name, pdb_name=p_less, header=None, scan_type = scan_type)
+    ddg = pd.merge(dg1, dg2, on='mut_chain')
+    ddg['mut'] = ddg.mut_chain.str[0:3] + ddg.mut_chain.str[4:]
+    ddg_name = 'ddg_' + mut_name
+    ddg[ddg_name] = ddg['dg_x'] - ddg['dg_y']
+    
+    ddg.to_csv(ddg_out_path + 'ddG_' + p + '_' + mut_name  +'.csv')
+    return ddg[['mut', ddg_name]]
 
 def construct_positionscan_string (pdb_name, ab_pos, pdb_loc):
 
