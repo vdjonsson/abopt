@@ -178,8 +178,21 @@ def rm_virus(pdb_file_name, labeled_chains):
     ppdb.to_pdb(path=file_path, records=['ATOM'], gz=False, append_newline=True)
 
 
-
-    
+def rm_anything(pdb_file_name, labeled_chains):
+    struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
+    ppdb = PandasPdb()
+    ppdb.read_pdb(struc_path)
+    the_pdb = ppdb.df['ATOM']
+    lab_chan = [value for key, value in labeled_chains.items() if 'spike' in key.lower()]
+    for mol in lab_chan:
+        query = "Delete " + labeled_chains.keys()[labeled_chains.values().index(mol)] + "? Type Y. \n"
+        val = input(query)
+        if "Y" in val:
+            for chain in mol:
+                the_pdb = the_pdb.loc[the_pdb['chain_id'] != chain]
+    ppdb.df['ATOM'] = the_pdb
+    file_path = data_path + pdb_file_name + '_reduced.pdb'
+    ppdb.to_pdb(path=file_path, records=['ATOM'], gz=False, append_newline=True)
 
 # Repair both structures, output is xx_Repair.pdb and xx_less_virus_Repair.pdb
 # run_repair_model(xx.pdb, xx.pdb)
