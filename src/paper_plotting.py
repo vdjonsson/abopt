@@ -5,6 +5,7 @@ import math
 from Levenshtein import distance as levenshtein_distance
 from scipy.cluster import hierarchy
 import scipy.spatial.distance as ssd
+from scipy import stats, signal
 from itertools import combinations
 import matplotlib.pyplot as plt
 from sklearn.manifold import MDS
@@ -47,14 +48,44 @@ def plot_estimator(output_filepath, filename, estimator_df, xlabel_name, ylabel_
     if ylabel_name == 'Coefficients':
         neg, pos = coefficient_cutoff(estimator[main_col].values)
         estimator = estimator.loc[np.logical_or(estimator[main_col] < neg, estimator[main_col] > pos)]
-    plt.figure(figsize=[9,3], dpi=300)
-    plt.bar(range(len(estimator)), estimator[main_col].values, tick_label = estimator.index)
+    plt.figure(figsize=[8,2], dpi=300)
+    plt.bar(range(len(estimator)), estimator[main_col].values, tick_label = estimator.index, color = '#636363', alpha = 0.7)
     plt.xticks(rotation=90)
     plt.xlabel(xlabel_name)
     plt.ylabel(ylabel_name)
     plt.tight_layout()
     sb.despine()
     plt.savefig(output_filepath+filename+'_bar_'+ylabel_name+'.png', dpi=300)
+    plt.close()
+
+def kde_plot(output_filepath, filename, estimator_df, xlabel, main_col):
+    plt.figure(figsize = (2,2))
+    estimator = estimator_df.loc[estimator_df[main_col]!=0]
+    estimator = estimator[main_col].values
+    if xlabel == 'Importances':
+        kde = stats.gaussian_kde(estimator)
+        x = np.linspace(estimator.min(), estimator.max(), num = len(np.unique(estimator)))
+        y = kde.evaluate(x)
+        valleys = x[signal.argrelextrema(y, np.less)]
+        cutoff = valleys[0]
+        plt.plot(x,y,color='#252525')
+        plt.vlines(x=cutoff,linestyle='--', color = '#de2d26', ymin = min(y), ymax=max(y), alpha=0.7)
+        sb.despine()
+    elif xlabel == 'Coefficients':
+        kde = stats.gaussian_kde(estimator)
+        x = np.linspace(estimator.min(), estimator.max(), num = len(np.unique(estimator)))
+        y = kde.evaluate(x)
+        valleys = x[signal.argrelextrema(y, np.less)]
+        neg = max([n for n in valleys if n<0])
+        pos = min([n for n in valleys if n>0])
+        plt.plot(x,y,color='#252525')
+        plt.vlines(x=neg,linestyle='--', color = '#de2d26', ymin = min(y), ymax=max(y), alpha=0.7)
+        plt.vlines(x=pos,linestyle='--', color = '#de2d26', ymin = min(y), ymax=max(y), alpha=0.7)
+        sb.despine()
+    plt.ylabel('Density')
+    plt.xlabel(xlabel)
+    plt.tight_layout()
+    plt.savefig(output_filepath+filename+'_kde_plot.png', dpi=300)
     plt.close()
 
 def create_levenshtein_map(df, id_col, heavy_col, light_col):
@@ -150,6 +181,7 @@ def plot_mapped_coefficients(filepath, location_filepath, output_filepath, filen
     pdb_locations = locations.pdb_location[list(mapped_antibody.index.get_level_values('location'))]
     mapped_antibody['pos'] = [aa+chain+str(pdb_location) for aa, chain, pdb_location in zip(list(mapped_antibody.index.get_level_values('aa')), list(mapped_antibody.index.get_level_values('chain')), pdb_locations)]
     
+    plt.figure(figsize=(6.5,2.5))
     g = sb.barplot(x='pos', y='coefficient', data = mapped_antibody, dodge=False, hue = 'wild_type', palette = {True: sb.color_palette('Set1')[0], False: sb.color_palette('Set1')[1]}, alpha = 0.7)
     g.legend().set_visible(False)
     plt.xlabel('Positions')
@@ -203,7 +235,7 @@ def plot_virus_wildtype(filepath, output_filepath, filename, estimator, true_seq
 def plot_logoplot(output_filepath, filename, coef_posmap, binding_sites, xlabel_name, ylabel_name, output_name, num_subplots, true_sequence):
     logomap = coef_posmap.T
     logomap.index = logomap.index.astype(int)
-    fig, axs = plt.subplots(num_subplots, 1, figsize=(5.5,2.5))
+    fig, axs = plt.subplots(num_subplots, 1, figsize=(5.5,3.5))
     partition_size = math.floor(len(logomap)/num_subplots)
     for i in range(num_subplots):
         if i+1<num_subplots:
@@ -290,6 +322,7 @@ mapped_coefficients = pd.read_csv(filepath+filename+'_mapped_coefficients.csv', 
 
 plot_prediction(output_filepath, filename, metadata, y_col, '$IC_{50}(ng/ml)$', 'Antibody')
 plot_estimator(output_filepath, filename, coefficients, 'Pseudopositions', 'Coefficients', 'coefficients')
+kde_plot(output_filepath, filename, coefficients, 'Coefficients', 'coefficients')
 
 coef_posmap = create_coef_matrix(coefficients)
 plot_coef_heatmap(output_filepath, filename, coef_posmap)
@@ -336,6 +369,7 @@ mapped_coefficients = pd.read_csv(filepath+filename+'_mapped_coefficients.csv', 
 
 plot_prediction(output_filepath, filename, metadata, y_col, '$IC_{50}(ng/ml)$', 'Antibody')
 plot_estimator(output_filepath, filename, coefficients, 'Pseudopositions', 'Coefficients', 'coefficients')
+kde_plot(output_filepath, filename, coefficients, 'Coefficients', 'coefficients')
 
 coef_posmap = create_coef_matrix(coefficients)
 plot_coef_heatmap(output_filepath, filename, coef_posmap)
@@ -375,6 +409,7 @@ metadata[y_col] = -1*metadata[y_col]
 metadata[y_col+'_predicted'] = -1*metadata[y_col+'_predicted']
 plot_prediction(output_filepath, filename, metadata, y_col, r'$\Delta log(K_{d,ACE2})$', 'Virus mutant')
 plot_estimator(output_filepath, filename, coefficients, 'Virus positions', 'Importances', 'importances')
+kde_plot(output_filepath, filename, coefficients, 'Importances', 'importances')
 
 coef_posmap = create_coef_matrix(coefficients)
 plot_coef_heatmap(output_filepath, filename, coef_posmap)
