@@ -19,18 +19,19 @@ from seqparser import create_coef_matrix
 #plt.rcParams.update({'mathtext.default': 'regular'})
 
 def plot_prediction(output_filepath, filename, df, y_col, legend_name, xlabel_name, log = True):
-    #plt.figure(figsize=[2,2], dpi=300)
+    plt.figure(figsize=[3.5,2.5], dpi=300)
     df.sort_values(by=[y_col], inplace=True)
+    palette = ['#636363', '#3182bd', '#de2d26']
     if np.all(df[y_col].values > 0) and np.all(df[y_col+'_predicted'].values > 0):
-        plt.plot(np.log10(df.loc[:,df.columns == y_col].values.flatten()), 'o')
-        plt.plot(np.log10(df.loc[:,df.columns == y_col+'_predicted'].values.flatten()), 'o')
+        plt.semilogy(df.loc[:,df.columns == y_col].values, 'o', color = palette[0], alpha =0.5)
+        plt.semilogy(df.loc[:,df.columns == y_col+'_predicted'].values, 'o', color = palette[1], alpha =0.5)
         plt.ylabel('log('+legend_name+')')
-        plt.legend(['log '+legend_name, 'log predicted '+legend_name])
+        #plt.legend(['log '+legend_name, 'log predicted '+legend_name])
     else:
-        plt.plot(df.loc[:,df.columns == y_col].values.flatten(), 'o')
-        plt.plot(df.loc[:,df.columns == y_col+'_predicted'].values.flatten(), 'o')
+        plt.plot(df.loc[:,df.columns == y_col].values.flatten(), 'o', color = palette[0], alpha = 0.5)
+        plt.plot(df.loc[:,df.columns == y_col+'_predicted'].values.flatten(), 'o', color = palette[2], alpha =0.5)
         plt.ylabel(legend_name)
-        plt.legend([legend_name, 'predicted '+legend_name])
+        #plt.legend([legend_name, 'predicted '+legend_name])
     plt.xticks([])
     plt.xlabel(xlabel_name)
     plt.tight_layout()
@@ -92,10 +93,12 @@ def plot_clustermap(output_filepath, filename, l_linkage, l_distances, df, id_co
     
     # to create legend:
     mappable = cm.ScalarMappable(norm = colors.Normalize(vmin=0, vmax=max(df[y_col].values)), cmap = 'YlGnBu')
-    fig,ax = plt.subplots(1,1)
-    cb = fig.colorbar(mappable, ax=ax, label = y_name)
+    fig,ax = plt.subplots(1,1, figsize=(3,1.5))
+    cb = fig.colorbar(mappable, ax=ax, aspect = 5)
+    cb.set_label(label = y_name, size=6)
+    cb.ax.tick_params(labelsize=4)
     cb.outline.set_visible(False)
-    plt.savefig(output_filepath+filename+'_ic_legend.png', dpi=300)
+    plt.savefig(output_filepath+filename+'_ic_legend.png', dpi=400)
     plt.close()
     
     if patient_col is not None:
@@ -128,9 +131,9 @@ def plot_clustermap(output_filepath, filename, l_linkage, l_distances, df, id_co
     plt.close()
     
     if patient_col is not None:
-        g = sb.clustermap(l_distances, row_linkage = l_linkage, col_linkage = l_linkage, row_colors = pd.concat([y_colors, gene_colors], axis=1), col_colors = patient_colors, cbar_kws = {'label': 'edit distance'})
+        g = sb.clustermap(l_distances, row_linkage = l_linkage, col_linkage = l_linkage, row_colors = pd.concat([y_colors, gene_colors], axis=1), col_colors = patient_colors, cbar_kws = {'label': 'edit distance'}, figsize=[6,6])
     else:
-        g = sb.clustermap(l_distances, row_linkage = l_linkage, col_linkage = l_linkage, row_colors = y_colors, col_colors = gene_colors, cbar_kws = {'label': 'edit distance'})
+        g = sb.clustermap(l_distances, row_linkage = l_linkage, col_linkage = l_linkage, row_colors = y_colors, col_colors = gene_colors, cbar_kws = {'label': 'edit distance'}, figsize=[6,6])
     plt.xticks(fontsize=6)
     plt.yticks(fontsize=6)
     plt.tight_layout()
@@ -147,7 +150,8 @@ def plot_mapped_coefficients(filepath, location_filepath, output_filepath, filen
     pdb_locations = locations.pdb_location[list(mapped_antibody.index.get_level_values('location'))]
     mapped_antibody['pos'] = [aa+chain+str(pdb_location) for aa, chain, pdb_location in zip(list(mapped_antibody.index.get_level_values('aa')), list(mapped_antibody.index.get_level_values('chain')), pdb_locations)]
     
-    sb.barplot(x='pos', y='coefficient', data = mapped_antibody, dodge=False, hue = 'wild_type', palette = {True: sb.color_palette('Set1')[0], False: sb.color_palette('Set1')[1]})
+    g = sb.barplot(x='pos', y='coefficient', data = mapped_antibody, dodge=False, hue = 'wild_type', palette = {True: sb.color_palette('Set1')[0], False: sb.color_palette('Set1')[1]}, alpha = 0.7)
+    g.legend().set_visible(False)
     plt.xlabel('Positions')
     plt.ylabel('Coefficients')
     plt.title(antibody_name)
@@ -184,8 +188,9 @@ def plot_virus_wildtype(filepath, output_filepath, filename, estimator, true_seq
         index = int(position[1:])
         if true_sequence[index+offset] == aa:
             estimator.wild_type[i] = True
-    plt.figure(figsize=(8,4))
-    sb.barplot(x='pos', y='importances', data= estimator, dodge = False, hue = 'wild_type', palette = 'Set1')
+    plt.figure(figsize=(6.5,2.5))
+    g = sb.barplot(x='pos', y='importances', data= estimator, dodge = False, hue = 'wild_type', palette = 'Set1', alpha=0.7)
+    g.legend().set_visible(False)
     plt.xlabel('Positions')
     plt.ylabel('Importances')
     plt.title('SARS-CoV-2')
@@ -198,7 +203,7 @@ def plot_virus_wildtype(filepath, output_filepath, filename, estimator, true_seq
 def plot_logoplot(output_filepath, filename, coef_posmap, binding_sites, xlabel_name, ylabel_name, output_name, num_subplots, true_sequence):
     logomap = coef_posmap.T
     logomap.index = logomap.index.astype(int)
-    fig, axs = plt.subplots(num_subplots, 1, figsize=(7,3))
+    fig, axs = plt.subplots(num_subplots, 1, figsize=(5.5,2.5))
     partition_size = math.floor(len(logomap)/num_subplots)
     for i in range(num_subplots):
         if i+1<num_subplots:
@@ -207,10 +212,10 @@ def plot_logoplot(output_filepath, filename, coef_posmap, binding_sites, xlabel_
         else:
             sub_logomap = logomap[i*partition_size:]
             sub_true_sequence = true_sequence[i*partition_size:]
-        logo = logomaker.Logo(sub_logomap, shade_below=0.5, fade_below=0.5, show_spines = False, ax = axs[i], color_scheme = 'dimgray')
-        logo.style_glyphs_in_sequence(sequence=sub_true_sequence, color='darkorange')
+        logo = logomaker.Logo(sub_logomap, shade_below=0.5, fade_below=0.5, show_spines = False, ax = axs[i], color_scheme = '#636363')
+        logo.style_glyphs_in_sequence(sequence=sub_true_sequence, color='#e6550d')
         for site in np.intersect1d(binding_sites, list(logomap.index[range(i*partition_size,(i+1)*partition_size)])):
-            logo.highlight_position(p=int(site), color='gold', alpha = 0.5)
+            logo.highlight_position(p=int(site), color='#fff7bc', alpha = 0.5)
         if i+1 == num_subplots:
             logo.ax.set_xlabel(xlabel_name)
         logo.ax.set_ylabel(ylabel_name)
@@ -253,10 +258,11 @@ def plot_violin_plot_mutations(output_filepath, filename, df, estimator):
         mutations_estimator = mutations_estimator.append(bind_avgs)
     # remove wild type
     mutations_estimator[mutations_estimator == 0] = np.nan
-    plt.figure(figsize=(8,5))
+    plt.figure(figsize=(6.5,3))
     sb.violinplot(x = 'residue', y = 'bind_avg', data = mutations_estimator, color = 'white', scale = 'width', inner = None, linewidth = 0.5)
     g = sb.stripplot(x = 'residue', y = 'bind_avg', hue = 'mutant', data = mutations_estimator, palette= 'twilight', alpha=0.5,  dodge=False)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    # plt.legend(title = 'Amino acid', frameon = False, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    g.legend().set_visible(False)
     plt.xticks(rotation=90)
     plt.xlabel('Positions')
     plt.ylabel('$\Delta log(K_{d,ACE2})$')
@@ -300,7 +306,6 @@ full_l_distances, l_distances = create_levenshtein_map(metadata, id_col, heavy_c
 l_linkage = create_linkage(full_l_distances)
 metadata[gene_col][~np.logical_or(metadata[gene_col].str.contains('HV3-53') , metadata[gene_col].str.contains('HV3-66'))] = 'Other'
 plot_clustermap(output_filepath, filename, l_linkage, full_l_distances, metadata, id_col, y_col, patient_col, gene_col, '$IC_{50}$', 'patient', 'VH gene')
-exit(1)
 plot_hierarchical_clust(output_filepath, filename, full_l_distances, l_linkage, 9)
 
 # VH3-53/66
@@ -336,13 +341,16 @@ coef_posmap = create_coef_matrix(coefficients)
 plot_coef_heatmap(output_filepath, filename, coef_posmap)
 for antibody in ['C105', 'CB6', 'CV30', 'B38', 'CC12.1']:
     plot_mapped_coefficients(filepath, location_filepath, output_filepath, filename, mapped_coefficients, antibody, id_col)
-    # specific_coefficients = mapped_coefficients.loc[np.logical_and(mapped_coefficients.index.get_level_values(id_col)==antibody, mapped_coefficients.index.get_level_values('chain') == 'H')]
-    # wt_seq = ''.join(list(specific_coefficients[specific_coefficients['wild_type']==True].index.get_level_values('aa')))
-    # specific_coefficients = specific_coefficients[['coefficient']]
-    # specific_coefficients.index = [aa+str(location) for name,location,chain,aa in specific_coefficients.index]
-    # specific_coef_map = create_coef_matrix(specific_coefficients)
-    # binding_sites = pd.read_csv(location_filepath+antibody+'_contacts.csv', sep=',', header=0).number_antibody.values
-    # plot_logoplot(output_filepath, filename, specific_coef_map, binding_sites, 'Positions', 'Coefficients', antibody, 2, wt_seq)
+    specific_coefficients = mapped_coefficients.loc[np.logical_and(mapped_coefficients.index.get_level_values(id_col)==antibody, mapped_coefficients.index.get_level_values('chain') == 'H')]
+    wt_seq = ''.join(list(specific_coefficients[specific_coefficients['wild_type']==True].index.get_level_values('aa')))
+    specific_coefficients = specific_coefficients[['coefficient']]
+    specific_coefficients.index = [aa+str(location) for name,location,chain,aa in specific_coefficients.index]
+    specific_coef_map = create_coef_matrix(specific_coefficients)
+    try:
+        binding_sites = pd.read_csv(location_filepath+antibody+'_contacts.csv', sep=',', header=0).number_antibody.values
+    except OSError as ose:
+        binding_sites = []
+    plot_logoplot(output_filepath, filename, specific_coef_map, binding_sites, 'Positions', 'Coefficients', antibody, 2, wt_seq)
 
 full_l_distances, l_distances = create_levenshtein_map(metadata, id_col, heavy_col, light_col)
 l_linkage = create_linkage(full_l_distances)
@@ -363,6 +371,8 @@ binding_filename = 'SARS_CoV_2_ACE2_epitopes'
 metadata = pd.read_csv(filepath+filename+'_with_predictors.csv', sep=',', header=0)
 coefficients = pd.read_csv(filepath+filename+'_coefficients.csv', sep=',', header=0, index_col=0)
 
+metadata[y_col] = -1*metadata[y_col]
+metadata[y_col+'_predicted'] = -1*metadata[y_col+'_predicted']
 plot_prediction(output_filepath, filename, metadata, y_col, r'$\Delta log(K_{d,ACE2})$', 'Virus mutant')
 plot_estimator(output_filepath, filename, coefficients, 'Virus positions', 'Importances', 'importances')
 

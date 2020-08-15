@@ -334,8 +334,6 @@ def satlassoCV_cvxopt(Xu, Xs, yu, ys, lambda_1s, lambda_2s, lambda_3s, cv=5):
         mean square error for the test set on each fold, varying lambda_1, lambda_2, lambda_3
     """
     
-    # TO DO: only have one problem
-    
     # Concatenate X and y arrays in order to split for KFold cross validation
     X = np.vstack((Xu, Xs))
     y = np.hstack((yu, ys))
@@ -509,13 +507,13 @@ class SatLassoCV(MultiOutputMixin, RegressorMixin, LinearModel):
         self.lambda_3s_ = self.lambda_3s
         
         if self.lambda_1s_ is None:
-            self.lambda_1s_ = np.linspace(start=1, stop=10, num=self.n_lambdas_1s) # TO DO
+            self.lambda_1s_ = np.linspace(start=1, stop=10, num=self.n_lambdas_1s)
         
         if self.lambda_2s_ is None:
-            self.lambda_2s_ = np.linspace(start=1, stop=10, num=self.n_lambdas_2s) # TO DO
+            self.lambda_2s_ = np.linspace(start=1, stop=10, num=self.n_lambdas_2s)
             
         if self.lambda_3s_ is None:
-            self.lambda_3s_ = np.linspace(start=1, stop=10, num=self.n_lambdas_3s) # TO DO
+            self.lambda_3s_ = np.linspace(start=1, stop=10, num=self.n_lambdas_3s)
         
         # Normalize with mean centering and l2-norm if normalize
         #   set to true, and fit_intercept set to true
