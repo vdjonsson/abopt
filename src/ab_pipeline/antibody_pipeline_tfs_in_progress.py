@@ -164,18 +164,24 @@ def label_chains(pdb_name):
 
 
 # TEA: Remove virus from p1, and name xx_less_virus.pdb
-def rm_virus(pdb_file_name, labeled_chains):
+def delete_specified_chains(atom_panda, labeled_chains, keyword_list):# atom_panda, labeled_chains, keyword_list):
+    keyword_list = [value.lower() for value in keyword_list]
+    chains_to_delete = [value for key, value in labeled_chains.items() if any(item in key.lower() for item in keyword_list)]
+    flat_chains = [item for sublist in chains_to_delete for item in sublist]
+    reduced = atom_panda[~atom_panda.chain_id.isin(flat_chains)]
+    return reduced
+
+
+def rm_virus_with_biopandas(pdb_file_name, labeled_chains):
     struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
     the_pdb = ppdb.df['ATOM']
-    lab_chan = [value for key, value in labeled_chains.items() if 'spike' in key.lower()]
-    for mol in lab_chan:
-        for chain in mol:
-            the_pdb = the_pdb.loc[the_pdb['chain_id'] != chain]
+    the_pdb = delete_specified_chains(the_pdb, labeled_chains, ['spike'])
     ppdb.df['ATOM'] = the_pdb
     file_path = data_path + pdb_file_name + '_no_virus.pdb'
     ppdb.to_pdb(path=file_path, records=['ATOM'], gz=False, append_newline=True)
+    return the_pdb
 
 
 def rm_anything(pdb_file_name, labeled_chains):
@@ -183,16 +189,55 @@ def rm_anything(pdb_file_name, labeled_chains):
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
     the_pdb = ppdb.df['ATOM']
-    lab_chan = [value for key, value in labeled_chains.items() if 'spike' in key.lower()]
-    for mol in lab_chan:
-        query = "Delete " + labeled_chains.keys()[labeled_chains.values().index(mol)] + "? Type Y. \n"
+    to_del = []
+    for mol in labeled_chains:
+        query = "Delete " + mol + "? Type Y. \n"
         val = input(query)
         if "Y" in val:
-            for chain in mol:
-                the_pdb = the_pdb.loc[the_pdb['chain_id'] != chain]
-    ppdb.df['ATOM'] = the_pdb
+            to_del.append(mol)
+    # print(to_del)
+    res = delete_specified_chains(the_pdb, labeled_chains, to_del)
+    # print(res)
+    ppdb.df['ATOM'] = res
     file_path = data_path + pdb_file_name + '_reduced.pdb'
     ppdb.to_pdb(path=file_path, records=['ATOM'], gz=False, append_newline=True)
+    return ppdb.df['ATOM']
+
+
+# would have to look for places with <=4A distance to rbd
+def find_epitopes(pdb_file_name, labeled_chains):
+    struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
+    ppdb = PandasPdb()
+    ppdb.read_pdb(struc_path)
+    spike_lis = [key for key, value in labeled_chains.items() if 'spike' in key.lower()]
+    spike_chains = [value for key, value in labeled_chains.items() if 'spike' in key.lower()]
+    flat_spike = [item for sublist in spike_chains for item in sublist]
+    ab = delete_specified_chains(ppdb.df['ATOM'], labeled_chains, spike_lis)
+    cols = ['chain_antibody', 'number_antibody', 'residue_antibody', 'closest distance']
+    epitopes = pd.DataFrame(columns=cols)
+    i = 0
+    prev_res = ''
+    for index, row in ab.iterrows():
+        ref_pt = (row['x_coord'], row['y_coord'], row['z_coord'])
+        distances = ppdb.distance(xyz=ref_pt, records=('ATOM',))
+        all_within_4A = ppdb.df['ATOM'][distances < 4.0]
+        spike_within_4A = all_within_4A[all_within_4A.chain_id.isin(flat_spike)]
+        res = row['residue_number']
+        if not spike_within_4A.empty and res != prev_res:
+            minm = 4.0
+            for ind, ro in spike_within_4A.iterrows():
+                dist = distances[ind]
+                if dist < minm:
+                    minm = dist
+            new_row = {'chain_antibody': row['chain_id'], 'number_antibody': res,
+                       'residue_antibody': row['residue_name'], 'closest distance': minm}
+            epitopes.loc[i] = new_row
+            i += 1
+            prev_res = res
+    out_file = data_path + pdb_file_name + '_epitopes.csv'
+    epitopes.to_csv(out_file, index=False)
+    return epitopes
+
 
 # Repair both structures, output is xx_Repair.pdb and xx_less_virus_Repair.pdb
 # run_repair_model(xx.pdb, xx.pdb)
