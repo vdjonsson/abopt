@@ -4,7 +4,7 @@ import seaborn as sb
 import wget
 from biopandas.pdb import PandasPdb
 
-data_path = '../data/'
+data_path = '' # '/home/teafs/Documents/Frosh/SURF_2020_Jonsson/PDB_Files/' # '../data/'
 
 aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR', 'TRP', 'TYR','VAL']
 aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T', 'W', 'Y', 'V']
@@ -148,8 +148,19 @@ f = 'nussenzweig_antibody_data_cleaned_with_alignments_mapped_back_sars_cov_2_ic
 p1  = '6XCM.pdb'
 
 
+def read_in_vdj_format_file_and_make_bm_indivlist(inpt, name):
+    muts = pd.read_csv(inpt)
+    fname = data_path + 'individual_list_' + name + '.txt'
+    with open(fname, 'w') as f:
+        for item in muts['mut'].tolist():
+            to_file = item + ';\n'
+            f.write(to_file)
+    return fname
+
+
 def label_chains(pdb_name):
     fasta_url = 'https://www.rcsb.org/fasta/entry/' + pdb_name
+    out_name = 'rcsb_pdb_' + pdb_name + '.fasta'
     fasta_file = wget.download(fasta_url)
     out_dict = {}
     with open(fasta_file, 'r') as f:
@@ -259,8 +270,20 @@ p2 = '6XCM_less_virus_Repair'
 # run_build_model('C105' + mut, p1, 'individual_list.txt')
 
 # TEA: rename all the repaired files output from build model from xx_number to xx_mutation
+def rename_bm_out(pdb_name, indiv_list_path):
+    with open(indiv_list_path, 'r') as f:
+        full = f.read()
+    broken = full.split(';\n')
+    for ind in range(len(broken)):
+        file_to_find = data_path + pdb_name + '_' + str(ind+1) + '.pdb'
+        new_name = data_path + pdb_name + '_' + broken[ind] + '.pdb'
+        os.rename(file_to_find, new_name)
+
+
 
 # TEA: remove the antibody from these structures and save to _less_ab.pdb
+
+
 # TEA: Now repair all mutated structures keep track of these from mutations file 
 # run_multiple_repair_model(pdb_name=p1, mutations)
 
@@ -271,13 +294,15 @@ p2 = '6XCM_less_virus_Repair'
 # run_repair_model(p1_m, p1_m)
 # run_repair_model(p2_m, p2_m)
 
-# TEA: find union of ACE2 and AB contact sites given epitopes.csv file 
+
 # TEA: write function to take union of antibody contact site and virus contact site 
 # TEA: eg ab loc: 1-4, 8-10; ace2: 2-4, 5  => union of ab+virus contact site: 1-10 
+# so get all the ones between them?
 
-pdb, df = read_pdb_locations('SARS_CoV_2_RBD')
+
+"""pdb, df = read_pdb_locations('SARS_CoV_2_RBD')
 dfss = df.loc[(df.pdb_location.astype(int) >=400) & (df.pdb_location.astype(int) <= 520)] 
-posscan_str =  ",".join(dfss.pdb_wt_foldx)
+posscan_str =  ",".join(dfss.pdb_wt_foldx)"""
 
 # Run position scan on p1_m and p2_m 
 # run_position_scan (p1_m, p1_m, posscan_str)
@@ -291,6 +316,15 @@ p2_wt_nr  = '6XCM_Repair_less_ab'
 # run_repair_model(p2_wt_nr, p2_wt_nr)
 p2_wt = '6XCM_Repair_less_ab_Repair.pdb'
 
-run_position_scan (p1_wt, p1_wt, posscan_str)
-run_position_scan (p2_wt, p2_wt, posscan_str)
+# run_position_scan (p1_wt, p1_wt, posscan_str)
+# run_position_scan (p2_wt, p2_wt, posscan_str)
 
+inp = '/home/teafs/Downloads/tmp.csv'
+indiv_list = read_in_vdj_format_file_and_make_bm_indivlist(inp, 'tmp')
+pdb = data_path + '6xcm'
+run_repair_model('C105', '6xcm')
+run_build_model('C105', '6xcm_Repair', indiv_list)
+pdb_name = '6xcm_Repair_1'
+rm_virus_with_biopandas(pdb_name,label_chains('6xcm'))
+end_pdb_name = pdb_name + '_no_virus'
+run_repair_model('C105', end_pdb_name)
