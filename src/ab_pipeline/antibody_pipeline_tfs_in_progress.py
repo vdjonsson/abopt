@@ -4,7 +4,7 @@ import seaborn as sb
 import wget
 from biopandas.pdb import PandasPdb
 
-data_path = '' # '/home/teafs/Documents/Frosh/SURF_2020_Jonsson/PDB_Files/' # '../data/'
+data_path = '/home/teafs/Documents/Frosh/SURF_2020_Jonsson/PDB_Files/' # '../data/'
 
 aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR', 'TRP', 'TYR','VAL']
 aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T', 'W', 'Y', 'V']
@@ -112,7 +112,13 @@ def calculate_ddgs_from_estimator_coefficients(file_estimator, ab_name, pdb_stru
 
 
 def get_optimal_antibody_structure_mutations(p1, p2, upper_bound_ddg = -0.4):
-    """selects large ddG values"""
+    """
+    Find favorable ddG antibody mutations
+    :param p1: first pdb
+    :param p2: second pdb
+    :param upper_bound_ddg: max favorable
+    :return: list of favorable mutations
+    """
     ddg = calculate_ddg_bind(p1, p2)
     ddg_sort = ddg.sort_values(by=1).reset_index()
     ddg_sort = ddg_sort.rename(columns = {0:'mut', 1:'ddg'})
@@ -125,16 +131,20 @@ def get_optimal_antibody_structure_mutations(p1, p2, upper_bound_ddg = -0.4):
         three = mut[0:3]
         tmp = aa_3to1_dic[three] + mut[3:]
         muts.append(tmp)
-
     return muts
 
 
 def write_to_mutations_file(mutations, mutations_filename):
-    """writes mutations to a file"""
+    """
+    Creates FoldX BuildModel compatible mutation file
+    :param mutations: list of desired mutations
+    :param mutations_filename: name to output mutation file to
+    :return: None
+    """
     mutstr = ''
     for mut in mutations:
-        mutstr = mutstr + mut+ ';\n'            
-    f  = open(mutations_filename, 'w')   
+        mutstr = mutstr + mut + ';\n'
+    f = open(mutations_filename, 'w')
     f.write(mutstr)
     f.close()
 
@@ -148,19 +158,13 @@ f = 'nussenzweig_antibody_data_cleaned_with_alignments_mapped_back_sars_cov_2_ic
 p1  = '6XCM.pdb'
 
 
-def read_in_vdj_format_file_and_make_bm_indivlist(inpt, name):
-    muts = pd.read_csv(inpt)
-    fname = data_path + 'individual_list_' + name + '.txt'
-    with open(fname, 'w') as f:
-        for item in muts['mut'].tolist():
-            to_file = item + ';\n'
-            f.write(to_file)
-    return fname
-
-
 def label_chains(pdb_name):
+    """
+    Match chain names to alphabetical tags in the PDB file
+    :param pdb_name: the name of the file on the RCSB PDB library
+    :return: dictionary matching chain names to pdb tags
+    """
     fasta_url = 'https://www.rcsb.org/fasta/entry/' + pdb_name
-    out_name = 'rcsb_pdb_' + pdb_name + '.fasta'
     fasta_file = wget.download(fasta_url)
     out_dict = {}
     with open(fasta_file, 'r') as f:
@@ -176,6 +180,13 @@ def label_chains(pdb_name):
 
 # TEA: Remove virus from p1, and name xx_less_virus.pdb
 def delete_specified_chains(atom_panda, labeled_chains, keyword_list):# atom_panda, labeled_chains, keyword_list):
+    """
+    Remove given chains from a given pdb biopanda
+    :param atom_panda: a biopanda containing pdb data
+    :param labeled_chains: dictionary matching chain names to pdb tags
+    :param keyword_list: words indicating a chain to delete
+    :return: biopanda with desired chains removed
+    """
     keyword_list = [value.lower() for value in keyword_list]
     chains_to_delete = [value for key, value in labeled_chains.items() if any(item in key.lower() for item in keyword_list)]
     flat_chains = [item for sublist in chains_to_delete for item in sublist]
@@ -184,6 +195,12 @@ def delete_specified_chains(atom_panda, labeled_chains, keyword_list):# atom_pan
 
 
 def rm_virus_with_biopandas(pdb_file_name, labeled_chains):
+    """
+    Removes SARS-CoV-2 spike glycoprotein chains from a pdb and prints to a new pdb file
+    :param pdb_file_name: name of pdb
+    :param labeled_chains: dictionary matching chain names to pdb tags
+    :return: biopanda containing pdb without the virus
+    """
     struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
@@ -195,20 +212,19 @@ def rm_virus_with_biopandas(pdb_file_name, labeled_chains):
     return the_pdb
 
 
-def rm_anything(pdb_file_name, labeled_chains):
+def rm_anything(pdb_file_name, labeled_chains, to_del):
+    """
+    Removes input chains from a pdb and prints to a new pdb file
+    :param pdb_file_name: name of pdb
+    :param labeled_chains: dictionary matching chain names to pdb tags
+    :param to_del: list of keywords indicating chains to delete
+    :return: biopanda containing pdb without the chains
+    """
     struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
     the_pdb = ppdb.df['ATOM']
-    to_del = []
-    for mol in labeled_chains:
-        query = "Delete " + mol + "? Type Y. \n"
-        val = input(query)
-        if "Y" in val:
-            to_del.append(mol)
-    # print(to_del)
     res = delete_specified_chains(the_pdb, labeled_chains, to_del)
-    # print(res)
     ppdb.df['ATOM'] = res
     file_path = data_path + pdb_file_name + '_reduced.pdb'
     ppdb.to_pdb(path=file_path, records=['ATOM'], gz=False, append_newline=True)
@@ -217,38 +233,43 @@ def rm_anything(pdb_file_name, labeled_chains):
 
 # would have to look for places with <=4A distance to rbd
 def find_epitopes(pdb_file_name, labeled_chains):
+    """
+    Find epitopes (ab to rbd <= 4A) on the antibody, output to csv
+    :param pdb_file_name: name of pdb
+    :param labeled_chains: dictionary matching chain names to pdb tags
+    :return: panda containing antibody epitope locations
+    """
     struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
+    ab_lis = [key for key, value in labeled_chains.items() if 'spike' not in key.lower()]
     spike_lis = [key for key, value in labeled_chains.items() if 'spike' in key.lower()]
     spike_chains = [value for key, value in labeled_chains.items() if 'spike' in key.lower()]
-    flat_spike = [item for sublist in spike_chains for item in sublist]
     ab = delete_specified_chains(ppdb.df['ATOM'], labeled_chains, spike_lis)
-    cols = ['chain_antibody', 'number_antibody', 'residue_antibody', 'closest distance']
+    ppdb.df['ATOM'] = delete_specified_chains(ppdb.df['ATOM'], labeled_chains, ab_lis)
+    cols = ['chain_antibody', 'number_antibody', 'residue_antibody', 'closest distance', 'chain_virus', 'number_virus', 'residue_virus']
     epitopes = pd.DataFrame(columns=cols)
     i = 0
     prev_res = ''
     for index, row in ab.iterrows():
         ref_pt = (row['x_coord'], row['y_coord'], row['z_coord'])
         distances = ppdb.distance(xyz=ref_pt, records=('ATOM',))
-        all_within_4A = ppdb.df['ATOM'][distances < 4.0]
-        spike_within_4A = all_within_4A[all_within_4A.chain_id.isin(flat_spike)]
+        spike_within_4A = ppdb.df['ATOM'][distances < 4.0]
         res = row['residue_number']
         if not spike_within_4A.empty and res != prev_res:
-            minm = 4.0
-            for ind, ro in spike_within_4A.iterrows():
-                dist = distances[ind]
-                if dist < minm:
-                    minm = dist
+            min_ind = distances.idxmin()
+            minm = distances[min_ind]
+            closest_spike = spike_within_4A.loc[min_ind, :]
             new_row = {'chain_antibody': row['chain_id'], 'number_antibody': res,
-                       'residue_antibody': row['residue_name'], 'closest distance': minm}
+                       'residue_antibody': row['residue_name'], 'closest distance': minm,
+                       'chain_virus': closest_spike['chain_id'], 'number_virus': closest_spike['residue_number'],
+                       'residue_virus': closest_spike['residue_name']}
             epitopes.loc[i] = new_row
             i += 1
             prev_res = res
     out_file = data_path + pdb_file_name + '_epitopes.csv'
     epitopes.to_csv(out_file, index=False)
     return epitopes
-
 
 # Repair both structures, output is xx_Repair.pdb and xx_less_virus_Repair.pdb
 # run_repair_model(xx.pdb, xx.pdb)
@@ -271,6 +292,12 @@ p2 = '6XCM_less_virus_Repair'
 
 # TEA: rename all the repaired files output from build model from xx_number to xx_mutation
 def rename_bm_out(pdb_name, indiv_list_path):
+    """
+    Renames files output from BuildModel to label with mutation
+    :param pdb_name: original pdb that was mutated
+    :param indiv_list_path: the mutation list used in BuildModel
+    :return: None
+    """
     with open(indiv_list_path, 'r') as f:
         full = f.read()
     broken = full.split(';\n')
@@ -319,8 +346,10 @@ p2_wt = '6XCM_Repair_less_ab_Repair.pdb'
 # run_position_scan (p1_wt, p1_wt, posscan_str)
 # run_position_scan (p2_wt, p2_wt, posscan_str)
 
-inp = '/home/teafs/Downloads/tmp.csv'
-indiv_list = read_in_vdj_format_file_and_make_bm_indivlist(inp, 'tmp')
+"""inp = '/home/teafs/Downloads/tmp.csv'
+muts = pd.read_csv(inpt)['mut'].tolist()
+indiv_list = data_path + 'individual_list_temp.txt'
+write_to_mutations_file(muts, indiv_list)
 pdb = data_path + '6xcm'
 run_repair_model('C105', '6xcm')
 run_build_model('C105', '6xcm_Repair', indiv_list)
@@ -328,3 +357,9 @@ pdb_name = '6xcm_Repair_1'
 rm_virus_with_biopandas(pdb_name,label_chains('6xcm'))
 end_pdb_name = pdb_name + '_no_virus'
 run_repair_model('C105', end_pdb_name)
+"""
+
+find_epitopes('7c01', label_chains('7c01'))
+find_epitopes('6xcm', label_chains('6xcm'))
+find_epitopes('7bz5', label_chains('7bz5'))
+find_epitopes('6xc3', label_chains('6xc3'))
