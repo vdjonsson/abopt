@@ -15,8 +15,8 @@ data_path = '../../data/'
 
 ml_path = '../../data/ml_data/'
 
-ab_names = ['CB6', 'C105', 'B38','CC12.1']
-pdb_names =['7c01','6XCM', '7bz5','6xc3']
+ab_names = ['CB6', 'C105', 'B38','CC12.1', 'ACE2']
+pdb_names =['7c01','6XCM', '7bz5','6xc3', '6m0j']
 has_mutations =[True, True, False, False]
 
 ab_muts = dict(zip(ab_names, has_mutations))
@@ -371,12 +371,14 @@ def get_ab_ddg_data(abname, mutation = None, scantype='virus', normalize = True)
 
 def combine_antibody_binding_energy_data(abnames, scantype='virus'):
     ddgv = pd.DataFrame()
-    for ab in ab_names: 
+    for ab in abnames: 
         print(ab)
         abddg = get_ab_ddg_data(ab, mutation = None, scantype=scantype, normalize = False)
         ddgv = pd.concat([abddg, ddgv])
 
+    u.write(ddgv, filename='ddgs_virus_scanning')
     return ddgv
+
 
 def merge_ab_bloom(ab_name, mut, normalize=True):
     bloom, bloomval = get_bloom_data(normalize=normalize)

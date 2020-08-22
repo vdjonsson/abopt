@@ -73,22 +73,19 @@ def plot_heatmap(ddg, title):
 # input to this should be a ddg file with the location parsed out into another column 
 def plot_ddg_stripplot(ddgsm,x, y, hue, filtername = None, filterval = '', title='ddg', subset=False, epitopes=None, epitopetype=None):
 
-    #color_epitopes = dict(zip(colors, types))
     if filtername != None:
-        print('non null filterval')
         ddgsm = ddgsm.loc[ddgsm[filtername] == filterval]
-        print(ddgsm)
-        print('printed')
+
     
     fig, ax = plt.subplots(figsize=(12,3))
-    sb.violinplot(data=ddgsm,x=x,y=y,hue='ab', color='white',scale='width',inner=None, linewidth=0.5)
-    g = sb.stripplot(data=ddgsm,x=x,y=y, hue='ab',s=4, palette='Set1', alpha=0.4, dodge=False)
-    for epitope in epitopes:
-        [plt.axvline(e, color ='#fee391', alpha = 0.6) for e in epitope]
+    sb.violinplot(data=ddgsm,x=x,y=y,hue=hue, color='white',scale='width',inner=None, linewidth=0.5)
+    g = sb.stripplot(data=ddgsm,x=x,y=y, hue=hue,s=4, palette='Set1', alpha=0.4, dodge=False)
+    if epitopes != None:
+        for epitope in epitopes:
+            [plt.axvline(e, color ='#fee391', alpha = 0.6, lw=2) for e in epitope]
 
     plt.xticks(rotation=90)
     ax.get_legend().remove()
-
     plt.tight_layout()
     plt.title(filterval)
     plt.tight_layout()

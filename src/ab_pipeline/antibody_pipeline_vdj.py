@@ -2,21 +2,31 @@ import pandas as pd
 import seaborn as sb 
 import os 
 import sys 
+import utils as u
 
 data_path = '../../data/'
 estimator_path = data_path + 'estimator/'
 location_path = data_path + 'location/'
 pdb_path = data_path + 'pdb/'
 out_path = data_path + 'ddg/' 
+out_tmp = '../../output/tmp/' 
 
 foldx_path = '/Applications/foldx5MacC11/'
 foldx_path = ''
 
-aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR','TRP', 'TYR','VAL']
-aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'Y','V']
+aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR','TRP', 'TYR','VAL','NA']
+aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'Y','V' ,'X']
 aa_1to3_dic = dict(zip(aa_single, aa_three))
 aa_3to1_dic = dict(zip(aa_three, aa_single))
 
+def convert_pdb_to_fasta_style(pdb_mutations):
+    mut_one = []
+
+    for mut in pdb_mutations: 
+        if mut !='H2S':
+            mut_one.append(aa_3to1_dic[mut])
+
+    return pd.Series(mut_one)
 
 def convert_pdb_to_list(ab_name, pdb_name, spec_chain='C' , min_res=400, max_res=520):
     prevnum , type_id = 0,0
@@ -48,13 +58,14 @@ def convert_pdb_to_list(ab_name, pdb_name, spec_chain='C' , min_res=400, max_res
                         prevnum = broken[residue_no]
     return lis
 
-def read_ddg_file(ab_name,pdb_name, header=None, scan_type='virus'):
+def read_ddg_file(ab_name,pdb_name, header=None, scantype='virus'):
     ddg_path = out_path + ab_name + '/' 
     prefix='PS_'
-    scan_type = '_' + scan_type
+    scantype = '_' + scantype
     suffix ='_scanning_output.txt'
-    df = pd.read_table(ddg_path + prefix + pdb_name +scan_type + suffix,header=header)
+    df = pd.read_table(ddg_path + prefix + pdb_name +scantype + suffix,header=header)
     df = df.rename(columns= {0:'mut_chain', 1:'dg'})
+    df = df.drop_duplicates(subset='mut_chain')
     return df
 
 def read_estimator(filename, ab):
@@ -66,18 +77,31 @@ def read_estimator(filename, ab):
         retval = False
     return retval, dfss 
 
-def calculate_ddg_bind(ab_name,p, p_less, scan_type='virus', mut_name=''):
+# Calculate ddg of binding: this is DONE
+def calculate_ddg_bind(ab_name,p, p_less, scantype='virus', mut_name=''):
 
+    less_struct = 'ab'
+    if scantype == 'ab': less_struct = 'virus'
     ddg_out_path = out_path 
-    dg1 = read_ddg_file(ab_name,pdb_name=p,header=None, scan_type=scan_type)
-    dg2 = read_ddg_file(ab_name, pdb_name=p_less, header=None, scan_type = scan_type)
-    ddg = pd.merge(dg1, dg2, on='mut_chain')
-    ddg['mut'] = ddg.mut_chain.str[0:3] + ddg.mut_chain.str[4:]
-    ddg_name = 'ddg_' + mut_name
-    ddg[ddg_name] = ddg['dg_x'] - ddg['dg_y']
+    dg1 = read_ddg_file(ab_name,pdb_name=p,header=None, scantype=scantype)
+    dg2 = read_ddg_file(ab_name, pdb_name=p_less, header=None, scantype = scantype)
+
+    ddg = pd.merge(dg1, dg2, on='mut_chain', suffixes = ['', '_less'])
+
+    print(ddg.head())
     
-    ddg.to_csv(ddg_out_path + 'ddG_' + p + '_' + mut_name  +'.csv')
-    return ddg[['mut', ddg_name]]
+    # mut = wt, chain, mutation
+    ddg['pdb_location'] = ddg.mut_chain.str[4:-1].astype(str)
+    ddg['mut'] = convert_pdb_to_fasta_style(ddg.mut_chain.str[0:3]) + ddg.mut_chain.str[3:]
+    ddg['wt'] = convert_pdb_to_fasta_style(ddg.mut_chain.str[0:3]) + ddg.mut_chain.str[3:4] + ddg.pdb_location
+    ddg['chain'] = ddg.mut_chain.str[3]
+    ddg['wildtype'] = ddg.mut.str[0] == ddg.mut.str[-1]
+
+    ddg_name = 'ddg_bind'
+    ddg[ddg_name] = ddg['dg'] - ddg['dg_less']
+    
+    ddg.to_csv(ddg_out_path + 'ddg_bind_' + ab_name + '_' + p + '_' + scantype + '_scanning' + mut_name  +'.csv')
+    return ddg
 
 def construct_positionscan_string (pdb_name, ab_pos, pdb_loc):
 
@@ -88,34 +112,44 @@ def construct_positionscan_string (pdb_name, ab_pos, pdb_loc):
         exit()
 
     merged = ab_pos.join(pdb_loc, on='fasta_location', how = 'left', lsuffix='_abpos')
-    merged = merged.dropna(axis=0, subset=['pdb_wt_foldx'])
-    posscan = merged.pdb_wt_foldx.unique()
+    merged = merged.dropna(axis=0, subset=['pdb_location'])
+    posscan = merged.pdb_location.unique()
     pd.Series(posscan).to_csv(data_path + pdb_name + '_position_scan.csv', index=False)
     posscan_str =  ",".join(posscan)
     return posscan_str
 
 
-# get positions where wildtype== True and coeff>=0, or wildtype==False, and coeff<=0 
-def get_mutation_positions(ab):
+# get positions where wildtype== True and coeff>=0, or wildtype==False, and coeff<=0 and return with pdb locations
+def get_antibody_mutation_positions(data, cutoffmin =0, cutoffmax=0, topmuts = 10, filter_name='chain', filter='H'):
 
-    # get positions where wildtype== True and coeff>=0 
-    # constrain also after reordering 
+    # get positions where wildtype== True and coeff > cutoffmax 
+    mut1 = data.loc[(data.wild_type == True) & (data.coefficient.astype(float) >=cutoffmax) & (data[filter_name] == filter)]
+    mut1 = mut1.loc[mut1.coefficient.astype(float).nlargest(n=topmuts).index]
 
-    mut1 = ab.loc[(ab.wild_type == True) & (ab.coefficient.astype(float) >=1e-10) & (ab.chain == 'H')]
-    mut1 = mut1.loc[mut1.coefficient.astype(float).nlargest(n=10).index]
+    # get positions where wildtype==False and coeff < -cutoffmin
+    mut2 = data.loc[(data.wild_type == False) & (data.coefficient <= cutoffmin) & (data[filter_name] == filter)]
+    mut2 = mut2.loc[mut2.coefficient.astype(float).nsmallest(n=topmuts).index]
 
-    mut2 = ab.loc[(ab.wild_type == False) & (ab.coefficient <= -1e-10) & (ab.chain =='H')]
-    mut2 = mut2.loc[mut2.coefficient.astype(float).nsmallest(n=10).index]
+    estimator = pd.concat([mut1, mut2])
+    
+    # convert estimator fasta locations to pdb locations
+    pdb, locations = read_pdb_locations(data.Name.values[0])
 
-    # focus on the heavy chain
-    abs = pd.concat([mut1, mut2])
+    # merge estimator with pdb locations 
+    merged = estimator.merge(locations, how='left', left_on =['chain', 'fasta_location'], right_on = ['chain', 'fasta_location'])
+    print(merged.head())
+    merged['mut'] = merged.wt_pdb + merged.aa_x
 
-    print (abs)
-    return abs 
+    return merged
+
     
 def read_pdb_locations(ab_name):
-    df = pd.read_csv(location_path + ab_name + '_locations.csv', dtype='object')
-    df['pdb_wt_foldx'] = df.aa + df.chain + df.pdb_location + 'a'
+    df = pd.read_csv(location_path + ab_name + '_locations.csv')
+    df['pdb_location'] = df.pdb_location.astype(str).str[:-2]
+    df['fasta_location'] = df.fasta_location.astype(str)
+    df['aa_three'] = [aa_1to3_dic[aa] for aa in df.aa.values]
+    df['wt_pdb_foldx'] = df.aa_three + df.chain + df.pdb_location + 'a'
+    df['wt_pdb'] = df.aa + df.chain +  df.pdb_location
     pdb = df.pdb.unique()[0]
     df = df.dropna(axis=0)
     return pdb, df
@@ -195,18 +229,16 @@ def build_optimal_antibody_structure_mutations(ab_name, p, p_less, upper_bound_d
     run_multiple_repair_model(ab_name,p_less, mutations)
     return mutations
 
-def get_optimal_antibody_structure_mutations(ab_name, p, p_less, upper_bound_ddg = -0.4):
+def get_optimal_antibody_structure_mutations(ab_name, pdb, pdb_less, upper_bound_ddg = -0.4):
 
-    ddg = calculate_ddg_bind(ab_name,p, p_less)
-    print (ddg)
-    ddg_sort = ddg.sort_values(by='ddg').reset_index()
-    #ddg_sort = ddg_sort.rename(columns = {0:'mut', 1:'ddg'})
+    # read file instead here 
+    ddg = calculate_ddg_bind(ab_name,pdb, pdb_less)
+    ddg_sort = ddg.sort_values(by='ddg_bind').reset_index()
 
     ddg_less = ddg_sort.loc[ddg_sort.ddg < -0.4 ]
     ddg_less['loc'] = ddg_less['mut'].str[4:-1]
     grouped = ddg_less.groupby(by='loc').count().reset_index().sort_values('ddg', ascending =False).reset_index()
 
-    print (ddg_less)
     muts = []
     for location in grouped['loc'].values:
         mut= ddg_less.loc[ddg_less['loc'] == location].iloc[0].mut
@@ -256,8 +288,8 @@ def write_to_mutations_file(ab_name, mutations, mutations_filename):
 #ab_name = 'B38'
 #p1 = '7bz5_Repair'
 
-ab_name = 'CB6'
-p = '7c01_Repair'
+#ab_name = 'CB6'
+#p = '7c01_Repair'
 
 #ab_name = 'CV30'
 #p1 = '6xe1_Repair'
@@ -299,7 +331,7 @@ less_str = '_less_virus_Repair'
 
 #pdb, df = read_pdb_locations('SARS_CoV_2_RBD')
 #dfss = df.loc[(df.pdb_location.astype(int) >=400) & (df.pdb_location.astype(int) <= 520)] 
-#posscan_str =  ",".join(dfss.pdb_wt_foldx)
+#posscan_str =  ",".join(dfss.pdb_location)
 
 # Run position scan on p1_m and p2_m 
 #run_position_scan (p1_m, p1_m, posscan_str)

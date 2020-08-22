@@ -201,13 +201,13 @@ def rm_virus_with_biopandas(pdb_file_name, labeled_chains):
     :param labeled_chains: dictionary matching chain names to pdb tags
     :return: biopanda containing pdb without the virus
     """
-    struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
+    struc_path = os.path.abspath( pdb_file_name + ".pdb")
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
     the_pdb = ppdb.df['ATOM']
     the_pdb = delete_specified_chains(the_pdb, labeled_chains, ['spike'])
     ppdb.df['ATOM'] = the_pdb
-    file_path = data_path + pdb_file_name + '_no_virus.pdb'
+    file_path = pdb_file_name + '_no_virus.pdb'
     ppdb.to_pdb(path=file_path, records=['ATOM'], gz=False, append_newline=True)
     return the_pdb
 
@@ -302,9 +302,10 @@ def rename_bm_out(pdb_name, indiv_list_path):
         full = f.read()
     broken = full.split(';\n')
     for ind in range(len(broken)):
-        file_to_find = data_path + pdb_name + '_' + str(ind+1) + '.pdb'
-        new_name = data_path + pdb_name + '_' + broken[ind] + '.pdb'
-        os.rename(file_to_find, new_name)
+        if broken[ind]:
+            file_to_find = pdb_name + '_' + str(ind+1) + '.pdb'
+            new_name = pdb_name + '_' + broken[ind] + '.pdb'
+            os.rename(file_to_find, new_name)
 
 
 
@@ -359,7 +360,37 @@ end_pdb_name = pdb_name + '_no_virus'
 run_repair_model('C105', end_pdb_name)
 """
 
-find_epitopes('7c01', label_chains('7c01'))
-find_epitopes('6xcm', label_chains('6xcm'))
-find_epitopes('7bz5', label_chains('7bz5'))
-find_epitopes('6xc3', label_chains('6xc3'))
+
+def all_together(inpt):
+    mut_panda = pd.read_csv(inpt)
+    mut_dict = {}
+    for index, row in mut_panda.iterrows():
+        if not row['wildtype']:
+            pdb_name = row['pdb']
+            mut = row['mut']
+            if pdb_name in mut_dict:
+                mut_dict[pdb_name].append(mut)
+            else:
+                mut_dict[pdb_name] = [mut]
+    for pdb in mut_dict:
+        temp = mut_panda.loc[mut_panda['pdb'] == pdb]
+        temp_ab = temp.iloc[0, :]
+        ab = temp_ab['antibody']
+        indiv_list = data_path + 'individual_list_' + pdb + '.txt'
+        write_to_mutations_file(mut_dict[pdb], indiv_list)
+        pdb_url = 'https://files.rcsb.org/download/' + pdb + '.pdb'
+        pdb_file = wget.download(pdb_url)
+        run_repair_model(ab, pdb.lower())
+        rep_pdb = pdb.lower() + '_Repair'
+        run_build_model(ab, rep_pdb, indiv_list)
+        rename_bm_out(rep_pdb, indiv_list)
+        for mut in mut_dict[pdb]:
+            mut_pdb = rep_pdb + '_' + mut
+            print(mut_pdb)
+            print(label_chains(pdb.lower()))
+            rm_virus_with_biopandas(mut_pdb, label_chains(pdb.lower()))
+            no_vir_pdb = mut_pdb + '_no_virus'
+            run_repair_model(ab, no_vir_pdb)
+
+inp = '/home/teafs/Downloads/tmp.csv'
+all_together(inp)
