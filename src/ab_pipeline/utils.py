@@ -2,7 +2,7 @@ import pandas as pd
 
 
 
-def write(data, ismatrix=False):
+def write(data, filename = 'tmp', ismatrix=False):
     if ismatrix: 
         print(data.head())
-    data.to_csv('../tmp/tmp.csv')
+    data.to_csv('../tmp/' + filename + '.csv')
