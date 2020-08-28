@@ -3,10 +3,10 @@ import numpy as np
 import sys
 import os
 import argparse
-from SatLasso import SatLasso, SatLassoCV
-from io_utils import read_file, output_sparse_matrix, create_coefs_dataframe, output_results, output_mapped_coefs, output_opt_lambdas
-from plot_utils import plot_predictors, plot_coefs
-from seqparser import seqparser, map_coefs
+from estimator_utils.SatLasso import SatLasso, SatLassoCV
+from estimator_utils.io_utils import read_file, output_sparse_matrix, create_coefs_dataframe, output_results, output_mapped_coefs, output_opt_lambdas
+from estimator_utils.plot_utils import plot_predictors, plot_coefs
+from estimator_utils.seqparser import seqparser, map_coefs
 
 def setup_parser():
     parser = argparse.ArgumentParser(prog = 'ESTIMATOR', description = 'Parse amino acid sequence and run SatLasso for variable selection.')
