@@ -2,17 +2,8 @@ import pandas as pd
 import seaborn as sb 
 import os 
 import antibody_pipeline as ap
-import energy as e 
-    
 
-def mutate(filename, chain, mutations):
     
-    # input: filename str of molecular structure to mutate
-    # input: repair bool True if structure to mutate requires repair
-    # input: chain str of the chain to repair
-    # input: array list of mutations WT (wild type) amino acid, chain, PDB location, MUT (mutation) amino acid
-    return 
-
 
 filename = '../../output/estimator/NeutSeqData_VH3-53_66_aligned_mapped_coefficients.csv'
 
@@ -24,7 +15,6 @@ outdir = '../../output/ddg/'
 
 
 # Constrain estimator based on cutoffs
-
 # ap.constrain(constraintype ='estimator', constrainfile=filename, antibody='C105', cutoff = [-0.4, 0.1], top=10)
 
 # Scan the antibody based on estimator locations 
@@ -47,4 +37,15 @@ condir = '../../output/constrain/'
 
 ap.constrain (constraintype ='energy', constrainfile=filename, antibody='C105', cutoff = [-1e3, 0.4], top=10)
 ap.design (designtype='antibody design', designval = 'C105',file_estimator= condir + 'C105_estimator.csv', file_energies= condir + 'C105_energies.csv')
+
+
+# Now mutate C105 with respect to these mutations
+
+designdir = '../../output/design/' 
+mutations = pd.read_csv(designdir + 'C105_design.csv').mut_x.values
+
+ap.mutate(pdb +'.pdb', mutations, pdbdir, designdir, repair=False)
+
+# Now repair and remove virus 
+
 
