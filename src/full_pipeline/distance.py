@@ -54,4 +54,4 @@ def run_distance(args):
     check_dataframe(df)
     l_distances = calculate_distances(df)
     
-    l_distances.to_csv(namespace.output_dir+'output/distance/'+namespace.filename+'.csv', sep=',', header=True, index=True)
+    l_distances.to_csv(namespace.output_dir+'output/distance/'+namespace.filename+'_distances.csv', sep=',', header=True, index=True)
