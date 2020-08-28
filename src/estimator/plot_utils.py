@@ -102,6 +102,8 @@ def plot_coefs(filepath, output_filepath, filename, colname, kde_cutoff = True):
     plt.figure(figsize=(20,5), dpi=300)
     plt.bar(range(0, len(non_zero_coefs)), non_zero_coefs.coefficients.values, tick_label= non_zero_coefs.index)
     plt.xticks(rotation=90)
+    if kde_cutoff:
+        plt.title('Cutoffs: positive = '+str(pos)+', negative = '+str(neg))
     plt.ylabel('coeff_'+colname)
     plt.tight_layout()
     plt.savefig(output_filepath+filename+'_coefficients_plot.png', dpi=300)
@@ -162,6 +164,8 @@ def plot_importances(filepath, output_filepath, filename, colname, kde_cutoff = 
     plt.figure(figsize=(20,5), dpi=300)
     plt.bar(range(0, len(non_zero_coefs)), non_zero_coefs.importances.values, tick_label= non_zero_coefs.index)
     plt.xticks(rotation=90)
+    if kde_cutoff:
+        plt.title('Cutoff = '+str(cutoff))
     plt.ylabel('importances_'+colname)
     plt.tight_layout()
     plt.savefig(output_filepath+filename+'_importances_plot.png', dpi=300)

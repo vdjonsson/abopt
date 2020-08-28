@@ -310,8 +310,8 @@ filepath = '../output/estimator/data/'
 output_filepath = '../paper_figs/'
 filename = 'NeutSeqData_C002-215_cleaned_aligned'
 id_col = 'antibody_id'
-heavy_col = 'igh_vdj_aa'
-light_col = 'igl_vj_aa'
+heavy_col = 'heavy_chain'
+light_col = 'light_chain'
 y_col = 'sars_cov_2_ic50_ngml'
 patient_col = 'participant_id'
 gene_col = 'heavy_v_gene'
@@ -351,14 +351,14 @@ output_filepath = '../paper_figs/'
 filename = 'NeutSeqData_VH3-53_66_aligned'
 
 vh3_metadata = pd.read_csv(filepath+filename+'_with_predictors.csv', sep=',', header=0)
-df = create_combined_df([metadata, vh3_metadata], [id_col, 'Name'], [heavy_col, 'VH or VHH'], [light_col, 'VL'], [y_col, 'IC50_ngml'], [patient_col, None], [gene_col, 'Heavy V Gene'], 'antibody_id', 'heavy_chain', 'light_chain', 'IC50', 'patient', 'VH gene')
+df = create_combined_df([metadata, vh3_metadata], [id_col, 'antibody_id'], [heavy_col, 'heavy_chain'], [light_col, 'light_chain'], [y_col, 'IC50_ngml'], [patient_col, None], [gene_col, 'Heavy V Gene'], 'antibody_id', 'heavy_chain', 'light_chain', 'IC50', 'patient', 'VH gene')
 full_l_distances, _ = create_levenshtein_map(df, 'antibody_id', 'heavy_chain', 'light_chain')
 l_linkage = create_linkage(full_l_distances)
 plot_clustermap(output_filepath, combined_filename, l_linkage, full_l_distances, df, 'antibody_id', 'IC50', 'patient', 'VH gene', '$IC_{50}$', 'patient', 'VH gene')
 
-heavy_col = 'VH or VHH'
-light_col = 'VL'
-id_col = 'Name'
+heavy_col = 'heavy_chain'
+light_col = 'light_chain'
+id_col = 'antibody_id'
 y_col = 'IC50_ngml'
 patient_col = None
 gene_col = 'Heavy V Gene'
