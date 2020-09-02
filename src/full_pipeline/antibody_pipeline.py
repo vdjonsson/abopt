@@ -1,7 +1,7 @@
 import energy as e 
 import foldx as foldx
 import pandas as pd
-
+import structure 
 
 
 
@@ -20,17 +20,6 @@ def constrain(constraintype, constrainfile, antibody, cutoff , top):
         constrained = e.constrain_energies(energies, cutoffmin= cutoff[0], cutoffmax= cutoff[1])
         constrained.to_csv(output_dir + antibody + '_energies.csv', index=None)
 
-def design (designtype, designval, file_estimator, file_energies):
-
-    """ Returns places to mutate on antibody 
-    """
-
-    if designtype == 'antibody design':
-        estimator = pd.read_csv(file_estimator)
-        energies = pd.read_csv(file_energies)
-        merged = energies.merge(estimator,how='inner', left_on='wt', right_on='wt_pdb')
-        merged.to_csv('../../output/design/' + designval + '_design.csv', index=None)
- 
 
 def scan (scantype, scanvalues, scanmolecule, antibody, pdbfile, pdbdir, outdir):
 
@@ -55,3 +44,24 @@ def energy (antibody, pdb, pdb_less, scantype, energy_type, indir, outdir):
         ddg = e.calculate_ddg_bind(antibody,pdb, pdb_less, scantype='ab', indir=indir, outdir=outdir)
 
     ddg.to_csv(outdir + energy_type + '_' + antibody + '_' + scantype + '_scanning.txt', index=None)
+
+
+
+def design (designtype, designval, file_estimator, file_energies):
+
+    """ Returns places to mutate on antibody 
+    """
+
+    if designtype == 'antibody design':
+        estimator = pd.read_csv(file_estimator)
+        energies = pd.read_csv(file_energies)
+        merged = energies.merge(estimator,how='inner', left_on='wt', right_on='wt_pdb')
+        merged.to_csv('../../output/design/' + designval + '_design.csv', index=None)
+ 
+
+def mutate (pdb, mutations, pdb_dir, out_dir, repair):
+
+    foldx.create_individual_list(mutations ,'./')
+    foldx.run_build_model(pdb, 'individual_list.txt', pdb_dir, out_dir)
+    
+    foldx.rename_buildmodel_files(pdb[:-4], out_dir, './individual_list.txt')

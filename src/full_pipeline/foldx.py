@@ -54,7 +54,20 @@ def rename_pdb_files(pdb_name, mutations, pdb_dir, out_dir):
         os.system(command)
         i = i+1
 
-def rename_buildmodel_files(pdb_name, indiv_list_path):
+
+
+def create_individual_list(mutations, mutpath):
+    mutstr = ''
+    for mut in mutations:
+        mutstr = mutstr + mut+ ';\n'            
+    f  = open(mutpath + 'individual_list.txt', 'w')   
+    f.write(mutstr)
+    f.close()
+
+    return mutstr
+
+
+def rename_buildmodel_files(pdb_name, pdb_dir, indiv_list_path):
     """
     Renames files output from BuildModel to label with mutation
     :param pdb_name: original pdb that was mutated
@@ -66,8 +79,8 @@ def rename_buildmodel_files(pdb_name, indiv_list_path):
     broken = full.split(';\n')
     for ind in range(len(broken)):
         if broken[ind]:
-            file_to_find = pdb_name + '_' + str(ind+1) + '.pdb'
-            new_name = pdb_name + '_' + broken[ind] + '.pdb'
+            file_to_find = pdb_dir + pdb_name + '_' + str(ind+1) + '.pdb'
+            new_name = pdb_dir + pdb_name + '_' + broken[ind] + '.pdb'
             os.rename(file_to_find, new_name)
 
 
