@@ -60,11 +60,13 @@ def main():
         run_merge(sys.argv[2:])
     elif sys.argv[1].lower() == 'optimize':
         run_optimize(sys.argv[2:])
+    elif sys.argv[1].lower() == 'version':
+        print('Version 1.0.0') # TO DO: print version information
     else:
         print('Incorrect usage. Correct usage shown below: ')
         print_menu()
         exit()
-    # TO DO: print version information
+        
 
 if __name__ == "__main__":
     main()
