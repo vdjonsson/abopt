@@ -33,10 +33,13 @@ def read_estimator(filename, ab):
 
     """ Reads filename corresponding to estimator 
     """
-
+    if (ab =='CC121'):
+        print(ab)
+        exit()
     retval = True
+    print(filename)
     df = pd.read_csv(filename)
-    dfss = df.loc[df['Name'] == ab ]
+    dfss = df.loc[df['antibody_id'] == ab ]
     if len(dfss) == 0:
         print('No estimator found')
         retval = False
@@ -68,10 +71,7 @@ def calculate_ddg_bind(antibody, pdb, pdb_less, scantype='virus', indir='./', ou
     ddg_name = 'ddg_bind'
     ddg[ddg_name] = ddg['dg'] - ddg['dg_less']
     
-
     return ddg
-
-
 
 
 def constrain_energies(data, cutoffmin =0, cutoffmax=0):
@@ -94,7 +94,7 @@ def constrain_estimator_features(data, cutoffmin =0, cutoffmax=0, topmuts = 10, 
     mut = mut.loc[mut['coefficient'].astype(float).nlargest(n=topmuts).index]
     mut['location'] = mut['location'].astype(str)
 
-    pdb, locations = read_pdb_locations(antibody=data['Name'].values[0])
+    pdb, locations = read_pdb_locations(antibody=data['antibody_id'].values[0])
 
     merged = mut.merge(locations, how='left', left_on =['chain', 'location'], right_on = ['chain', 'fasta_location'])
     merged['mut'] = merged.wt_pdb + merged.aa_x
@@ -112,6 +112,8 @@ def read_pdb_locations(file_location='', antibody=''):
         file_location = '../../data/location/' + antibody+ '_locations.csv'
 
     df = pd.read_csv(file_location)
+    
+    df = df.dropna(axis=0)
     df['pdb_location'] = df.pdb_location.astype(str).str[:-2]
     df['fasta_location'] = df.fasta_location.astype(str)
     df['aa_three'] = [aa_1to3_dic[aa] for aa in df.aa.values]

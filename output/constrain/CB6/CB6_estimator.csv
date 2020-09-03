@@ -1,0 +1,5 @@
+antibody_id_x,location,chain,aa_x,wild_type,coefficient,pdb,pdb_location,fasta_location,aa_y,antibody_id_y,aa_three,wt_pdb_foldx,wt_pdb,mut
+CB6,26,H,F,True,257.14953417476096,7C01,27,26,F,CB6,PHE,FH27a,FH27,FH27F
+CB6,104,H,Y,True,130.10613777119798,7C01,105,104,Y,CB6,TYR,YH105a,YH105,YH105Y
+CB6,102,H,G,True,118.25007976800106,7C01,103,102,G,CB6,GLY,GH103a,GH103,GH103G
+CB6,106,H,D,True,84.37080718639051,7C01,107,106,D,CB6,ASP,DH107a,DH107,DH107D

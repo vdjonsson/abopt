@@ -1,0 +1,4 @@
+antibody_id_x,location,chain,aa_x,wild_type,coefficient,pdb,pdb_location,fasta_location,aa_y,antibody_id_y,aa_three,wt_pdb_foldx,wt_pdb,mut
+COVA2-39,26,H,F,True,257.14953417476096,7JMP,27,26,F,COVA2-39,PHE,FH27a,FH27,FH27F
+COVA2-39,57,H,Y,True,116.54090920480982,7JMP,58,57,Y,COVA2-39,TYR,YH58a,YH58,YH58Y
+COVA2-39,110,H,D,True,84.37080718639051,7JMP,101,110,D,COVA2-39,ASP,DH101a,DH101,DH101D

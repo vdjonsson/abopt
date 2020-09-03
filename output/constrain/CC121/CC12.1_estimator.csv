@@ -1,0 +1,3 @@
+antibody_id_x,location,chain,aa_x,wild_type,coefficient,pdb,pdb_location,fasta_location,aa_y,antibody_id_y,aa_three,wt_pdb_foldx,wt_pdb,mut
+CC12.1,104,H,D,True,84.37080718639051,6XC2,102,104,D,CC12.1,ASP,DH102a,DH102,DH102D
+CC12.1,97,H,D,True,21.41054792014632,6XC2,95,97,D,CC12.1,ASP,DH95a,DH95,DH95D

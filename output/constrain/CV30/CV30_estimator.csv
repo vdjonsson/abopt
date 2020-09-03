@@ -1,0 +1,4 @@
+antibody_id_x,location,chain,aa_x,wild_type,coefficient,pdb,pdb_location,fasta_location,aa_y,antibody_id_y,aa_three,wt_pdb_foldx,wt_pdb,mut
+CV30,57,H,Y,True,116.54090920480982,6XE1,58,57,Y,CV30,TYR,YH58a,YH58,YH58Y
+CV30,105,H,D,True,84.37080718639051,6XE1,101,105,D,CV30,ASP,DH101a,DH101,DH101D
+CV30,97,H,D,True,21.41054792014632,6XE1,95,97,D,CV30,ASP,DH95a,DH95,DH95D

@@ -55,16 +55,17 @@ def rename_pdb_files(pdb_name, mutations, pdb_dir, out_dir):
         i = i+1
 
 
-
-def create_individual_list(mutations, mutpath):
+def create_individual_list(mutations, pdb, mutpath):
     mutstr = ''
-    for mut in mutations:
+    for mut in mutations.values:
         mutstr = mutstr + mut+ ';\n'            
-    f  = open(mutpath + 'individual_list.txt', 'w')   
+    f  = open('./individual_list.txt', 'w')   
     f.write(mutstr)
     f.close()
 
-    return mutstr
+    mutations.to_csv(mutpath + pdb[:-4] + '_mutations.txt', index=None)
+
+
 
 
 def rename_buildmodel_files(pdb_name, pdb_dir, indiv_list_path):
