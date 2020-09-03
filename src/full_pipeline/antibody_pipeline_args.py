@@ -10,6 +10,7 @@ from repair import run_repair
 from epitope import run_epitope
 from energy import run_energy
 from merge import run_merge
+from optimize import run_optimize
 
 def print_menu():
     print(
