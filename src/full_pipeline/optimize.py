@@ -2,6 +2,7 @@ import numpy as np
 import cvxpy as cp
 import pandas as pd
 import warnings
+import argparse
 
 def setup_parser():
     parser = argparse.ArgumentParser(prog = 'ESTIMATOR', description = 'Parse amino acid sequence and run SatLasso for variable selection.')
