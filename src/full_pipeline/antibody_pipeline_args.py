@@ -2,6 +2,7 @@ import sys
 from align import run_align
 from distance import run_distance
 from estimator import run_estimator
+from map import run_map
 from constrain import run_constrain
 from scan import run_scan
 from mutate import run_mutate
@@ -41,6 +42,8 @@ def main():
         run_distance(sys.argv[2:])
     elif sys.argv[1].lower() == 'estimator':
         run_estimator(sys.argv[2:])
+    elif sys.argv[1].lower() == 'map':
+        run_map(sys.argv[2:])
     elif sys.argv[1].lower() == 'constrain':
         run_constrain(sys.argv[2:])
     elif sys.argv[1].lower() == 'scan':
