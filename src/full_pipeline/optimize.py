@@ -5,7 +5,7 @@ import warnings
 import argparse
 
 def setup_parser():
-    parser = argparse.ArgumentParser(prog = 'ESTIMATOR', description = 'Parse amino acid sequence and run SatLasso for variable selection.')
+    parser = argparse.ArgumentParser(prog = 'OPTIMIZE', description = 'Uses convex combinatorial optimization to compute optimal antibody cocktail for provided virus mutants.')
     parser.add_argument('--filepath', type = str, required = True, dest = 'filepath', help = 'Filepath of fitness matrix dataframe', metavar = 'FILEP')
     parser.add_argument('--filename', type = str, required = True, dest = 'filename', help = 'Filename of fitness matrix dataframe (do not include file type extension)', metavar = 'FILEN')
     parser.add_argument('--p', type = float, required = True, dest = 'p_unmanaged', help = 'Maximum proportion of viruses not covered by the antibody cocktail', metavar = 'P_UNMANAGED')
