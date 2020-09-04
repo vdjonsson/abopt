@@ -95,14 +95,14 @@ def remove_chains(pdb_dir,pdb, labeled_chains, chain_type, out_dir):
     return ppdb.df['ATOM']
 
 
-def find_epitopes(pdb_file_name, labeled_chains):
+def find_epitopes(pdb_dir, pdb_file_name, labeled_chains, distance):
     """
-    Find epitopes (ab to rbd <= 4A) on the antibody, output to csv
+    Find epitopes (ab to rbd <= distance) on the antibody, output to csv
     :param pdb_file_name: name of pdb
     :param labeled_chains: dictionary matching chain names to pdb tags
     :return: panda containing antibody epitope locations
     """
-    struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
+    struc_path = os.path.abspath(pdb_dir + pdb_file_name)
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
     ab_lis = [key for key, value in labeled_chains.items() if 'spike' not in key.lower()]
@@ -117,7 +117,7 @@ def find_epitopes(pdb_file_name, labeled_chains):
     for index, row in ab.iterrows():
         ref_pt = (row['x_coord'], row['y_coord'], row['z_coord'])
         distances = ppdb.distance(xyz=ref_pt, records=('ATOM',))
-        spike_within_4A = ppdb.df['ATOM'][distances < 4.0]
+        spike_within_4A = ppdb.df['ATOM'][distances < distance]
         res = row['residue_number']
         if not spike_within_4A.empty and res != prev_res:
             min_ind = distances.idxmin()
@@ -130,7 +130,7 @@ def find_epitopes(pdb_file_name, labeled_chains):
             epitopes.loc[i] = new_row
             i += 1
             prev_res = res
-    out_file = data_path + pdb_file_name + '_epitopes.csv'
+    out_file = '../../data/location/' + pdb_file_name[:-4] + '_epitopes.csv'
     epitopes.to_csv(out_file, index=False)
     return epitopes
 
