@@ -33,9 +33,7 @@ def read_estimator(filename, ab):
 
     """ Reads filename corresponding to estimator 
     """
-    if (ab =='CC121'):
-        print(ab)
-        exit()
+
     retval = True
     print(filename)
     df = pd.read_csv(filename)
@@ -74,11 +72,14 @@ def calculate_ddg_bind(antibody, pdb, pdb_less, scantype='virus', indir='./', ou
     return ddg
 
 
-def constrain_energies(data, cutoffmin =0, cutoffmax=0):
+def constrain_energies(data, cutoffmin =0, cutoffmax=0, topmuts=10):
 
+    data['mutation'] = data.mut.str[-1:]
+    data = data.loc[~data.mutation.isin(['e','o'])]
     sorted = data.sort_values(by='ddg_bind').reset_index()
     constrained = sorted.loc[sorted.ddg_bind < cutoffmax ]
     constrained['loc'] = constrained['mut'].str[4:-1]
+    constrained = constrained.iloc[0:topmuts+1,:]
 
     return constrained
 
@@ -113,6 +114,7 @@ def read_pdb_locations(file_location='', antibody=''):
 
     df = pd.read_csv(file_location)
     
+    print(df.head())
     df = df.dropna(axis=0)
     df['pdb_location'] = df.pdb_location.astype(str).str[:-2]
     df['fasta_location'] = df.fasta_location.astype(str)
