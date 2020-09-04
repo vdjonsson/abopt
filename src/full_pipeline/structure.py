@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-#import wget
+import wget
 from biopandas.pdb import PandasPdb
 
 
@@ -39,8 +39,13 @@ def delete_specified_chains(atom_panda, labeled_chains, keyword_list):# atom_pan
     :return: biopanda with desired chains removed
     """
     keyword_list = [value.lower() for value in keyword_list]
+    print('keyword list')
+    print(keyword_list)
     chains_to_delete = [value for key, value in labeled_chains.items() if any(item in key.lower() for item in keyword_list)]
+    print('chains to delete')
+    print(chains_to_delete)
     flat_chains = [item for sublist in chains_to_delete for item in sublist]
+    print(flat_chains)
     reduced = atom_panda[~atom_panda.chain_id.isin(flat_chains)]
     return reduced
 
@@ -52,7 +57,7 @@ def remove_virus_with_biopandas(pdb_file_name, labeled_chains):
     :param labeled_chains: dictionary matching chain names to pdb tags
     :return: biopanda containing pdb without the virus
     """
-    struc_path = os.path.abspath( pdb_file_name + ".pdb")
+    struc_path = os.path.abspath( pdb_file_name)
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
     the_pdb = ppdb.df['ATOM']
@@ -63,7 +68,7 @@ def remove_virus_with_biopandas(pdb_file_name, labeled_chains):
     return the_pdb
 
 
-def remove_chains(pdb_file_name, labeled_chains, to_del):
+def remove_chains(pdb_dir,pdb, labeled_chains, chain_type, out_dir):
     """
     Removes input chains from a pdb and prints to a new pdb file
     :param pdb_file_name: name of pdb
@@ -71,13 +76,21 @@ def remove_chains(pdb_file_name, labeled_chains, to_del):
     :param to_del: list of keywords indicating chains to delete
     :return: biopanda containing pdb without the chains
     """
-    struc_path = os.path.abspath(data_path + pdb_file_name + ".pdb")
+    less_molecule = 'less_virus'
+    chain_keyword = ['Spike']
+    if chain_type == 'antibody': 
+        less_molecule = 'less_ab'
+        chain_keyword = ['Fab', 'chain']
+    struc_path = os.path.abspath(pdb_dir + pdb )
+
     ppdb = PandasPdb()
     ppdb.read_pdb(struc_path)
     the_pdb = ppdb.df['ATOM']
-    res = delete_specified_chains(the_pdb, labeled_chains, to_del)
+    res = delete_specified_chains(the_pdb, labeled_chains, chain_keyword)
+
     ppdb.df['ATOM'] = res
-    file_path = data_path + pdb_file_name + '_reduced.pdb'
+    file_path = out_dir + pdb[:-4] + '_' + less_molecule + '.pdb'
+    print('Removed: ' + file_path)
     ppdb.to_pdb(path=file_path, records=['ATOM'], gz=False, append_newline=True)
     return ppdb.df['ATOM']
 

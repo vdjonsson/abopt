@@ -17,7 +17,7 @@ def constrain(constraintype, constrainfile, antibody, cutoff , top, out_dir):
         constrained.to_csv(out_dir + antibody + '_estimator.csv', index=None)
     elif constraintype == 'energy':
         energies = pd.read_table(constrainfile, sep=',')
-        constrained = e.constrain_energies(energies, cutoffmin= cutoff[0], cutoffmax= cutoff[1])
+        constrained = e.constrain_energies(energies, cutoffmin= cutoff[0], cutoffmax= cutoff[1], topmuts=top)
         constrained.to_csv(out_dir + antibody + '_energies.csv', index=None)
 
 
