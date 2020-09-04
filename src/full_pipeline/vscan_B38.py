@@ -63,4 +63,4 @@ mutations = locs.aa + pdb_rbd[ab_pdb[ab_name]] + locs.pdb_location +'a'
 scanvalues = mutations.values    
     
 print('about to scan')
-ap.scan (scantype='location', scanvalues = scanvalues, scanmolecule= 'virus', antibody = ab_name, pdblist = pdblist , pdbdir=repair_dir, outdir=scan_dir)
+ap.scan (scantype='location', scanvalues = scanvalues, scanmolecule= 'virus', antibody = ab_name, pdblist = ab_list , pdbdir=repair_dir, outdir=scan_dir)
