@@ -50,7 +50,7 @@ def energy (antibody, pdb, pdb_less, scantype, energy_type, indir, outdir):
     print(pdb)
     print(pdb_less)
     if energy_type =='ddgbind':
-        ddg = e.calculate_ddg_bind(antibody,pdb, pdb_less, scantype='ab', indir=indir, outdir=outdir)
+        ddg = e.calculate_ddg_bind(antibody,pdb, pdb_less, scantype=scantype, indir=indir, outdir=outdir)
 
     ddg.to_csv(outdir + energy_type + '_' + antibody + '_' + scantype + '_scanning.txt', index=None)
 

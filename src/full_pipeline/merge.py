@@ -5,10 +5,6 @@ import pandas as pd
 
 # This functionality combines multiple runs  
 
-
-
-
-
 def combine_antibody_binding_energy_data(abnames, scantype='virus'):
     ddgv = pd.DataFrame()
     for ab in abnames:

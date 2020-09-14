@@ -41,6 +41,9 @@ energy_dirs = dict(zip(pdb_names,[ '../../output/energy/' + ab +'/' for ab in ab
 design_dirs = dict(zip(pdb_names,[ '../../output/design/' + ab +'/' for ab in ab_names]))
 mutate_dirs = dict(zip(pdb_names,[ '../../output/mutate/' + ab +'/' for ab in ab_names]))
 
+''' Generate all the data: run estimator, energy minimization  '''
+
+
 
 'Repair antibody/viral receptor original structure '
 

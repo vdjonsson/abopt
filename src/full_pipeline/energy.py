@@ -69,6 +69,7 @@ def calculate_ddg_bind(antibody, pdb, pdb_less, scantype='virus', indir='./', ou
     ddg_name = 'ddg_bind'
     ddg[ddg_name] = ddg['dg'] - ddg['dg_less']
     
+    print (ddg.head())
     return ddg
 
 
