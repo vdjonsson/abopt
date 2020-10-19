@@ -21,6 +21,7 @@ def print_menu():
     align         Pseudo align antibody sequences
     distance      Calculate Levenshtein distance between antibody sequences
     estimator     Run estimator on antibody sequences
+    map           Map estimator FASTA locations to PDB locations
     constrain     Constrain estimator features
     scan          Mutational scanning on structure
     mutate        Mutate a molecular structure
