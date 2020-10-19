@@ -49,4 +49,4 @@ def run_constrain(args):
     namespace = parser.parse_args()
     create_output_structure(namespace.output_dir)
     
-    constrain(namespace.type, namespace.filepath+namespace.filename, namespace.name, namespace.cutoff, namespace.top, namespace.output_dir)
+    constrain(namespace.type, namespace.filepath+namespace.filename, namespace.name, namespace.cutoff, namespace.top, namespace.output_dir+'output/mutate/')
