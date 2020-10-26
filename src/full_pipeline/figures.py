@@ -1,9 +1,9 @@
 import pandas as pd 
 import seaborn as sb 
-import antibody_analysis as aa 
-import antibody_pipeline_vdj as ap
-import utils as u 
-import plot_utils as pltab
+import analysis as aa 
+import antibody_pipeline as ap
+#import utils as u 
+import plotutils as pltab
 import numpy as np           
 import matplotlib.pyplot as plt 
 
@@ -33,6 +33,7 @@ def set_location_index(data):
     data['location_index'] = location_index
     return data 
 
+'''
 def figure_1():  # plot fitness as violinplot with matrix data 
 
     fit = pd.read_csv(out_tmp + 'matrix.csv')    
@@ -42,7 +43,7 @@ def figure_1():  # plot fitness as violinplot with matrix data
     abs = fit.columns[1:-2]
 
     fits = fit[abs]
-    u.write(fits, True)
+    #u.write(fits, True)
     pltab.plot_correlation(data=fits, fignum='1a')
    
     ddgsm = pd.melt(ddgsall, id_vars=['location', 'mut', 'location_index'], value_vars=ddgsall.columns[0:4], var_name= 'ab',value_name='ddg')
@@ -59,8 +60,7 @@ def figure_1():  # plot fitness as violinplot with matrix data
         pltab.plot_ddg_stripplot(ddgsm,x='location', y='ddg', hue='ab', filtername='ab', filterval=ab, title='virus scan', epitopes=[rbdlines], epitopetype=['RBD'])    
         
     pltab.plot_ddg_stripplot(ddgsm,x='location', y='ddg', hue='ab',title='virus scan', epitopes=[rbdlines], epitopetype=['RBD'])    
-
-
+'''
 def figure_2(): # graph individual wt ab ddgs violin plots
 
     ab_names = ['C105','ACE2']
@@ -68,7 +68,7 @@ def figure_2(): # graph individual wt ab ddgs violin plots
     ddgab['location']= ddgab.location.astype(int)
     ddgab = ddgab.loc[(ddgab.location >= 400)]
     ddgab = ddgab.loc[(ddgab.location <= 520)]
-    u.write(ddgab)
+    #u.write(ddgab)
 
     epitopes = pd.read_csv('../../data/location/epitopes.csv')
     epitopes['location'] = epitopes.epitope_location.astype(int)

@@ -46,36 +46,6 @@ energy_dirs = dict(zip(pdb_names,[ '../../output/energy/' + ab +'/' for ab in ab
 design_dirs = dict(zip(pdb_names,[ '../../output/design/' + ab +'/' for ab in ab_names]))
 mutate_dirs = dict(zip(pdb_names,[ '../../output/mutate/' + ab +'/' for ab in ab_names]))
 
-''' Generate all the data: run estimator, energy minimization  '''
-
-'Repair antibody/viral receptor original structure '
-
-#ap.repair(pdb_dirs = list(pdb_dirs.values()), pdb_list= list(pdb_files.values()), out_dirs=list(repair_dirs.values()))
-
-repaired_wt_pdb = [ pdb +'_Repair.pdb' for pdb in pdb_names]
-repaired_wt_dict = dict(zip(pdb_names, repaired_wt_pdb))
-
-' Remove virus and antibody from WT structure and repair these structures '
-
-'''
-for pdb_name in pdb_names: 
-
-    ' Remove antibody and virus from original structure and repair '
-    labeled_chains = structure.label_chains(pdb_name)
-    ap.remove(pdb_dirs = [repair_dirs[pdb_name]], pdb_list = [repaired_wt_dict[pdb_name]], chains= labeled_chains, chain_type= 'antibody', out_dirs = [remove_dirs[pdb_name]])
-    ap.remove(pdb_dirs = [repair_dirs[pdb_name]], pdb_list = [repaired_wt_dict[pdb_name]], chains= labeled_chains, chain_type= 'virus', out_dirs = [remove_dirs[pdb_name]])
-
-    ' Repair these structures '
-    ap.repair(pdb_dirs = [remove_dirs[pdb_name]], pdb_list = [repaired_wt_dict[pdb_name][:-4]+'_less_ab.pdb'], out_dirs =[repair_dirs[pdb_name]])
-    ap.repair(pdb_dirs = [remove_dirs[pdb_name]], pdb_list = [repaired_wt_dict[pdb_name][:-4]+'_less_virus.pdb'], out_dirs =[repair_dirs[pdb_name]])
-
-'''
-
-removed_repaired_pdb = [ pdb +'_Repair_less_virus.pdb' for pdb in pdb_names]
-repaired_removed_repaired_pdb = [ pdb +'_Repair_less_virus_Repair.pdb' for pdb in pdb_names]
-
-' Constrain estimator coefficients based on some cutoffs '
-
 for ab_name in ab_names: 
 
     ' Set up directories '
@@ -91,47 +61,12 @@ for ab_name in ab_names:
     remove_dir = remove_dirs[ab_pdb[ab_name]]
     constrain_dir = constrain_dirs[ab_pdb[ab_name]]    
 
-    ' Constrain estimator to very large negative of positive coefficients '
-    cutoff = 1e-8
-    ap.constrain(constraintype ='estimator', constrainfile=filename, antibody=ab_name, cutoff = [-cutoff, cutoff], top=1000,out_dir = constrain_dir)
-
-    ' Graph the estimator locations to mutate '
-    file_estimator = '../../output/constrain/' + ab_name + '/' + ab_name + '_estimator.csv'
-    estimator = pd.read_csv(file_estimator)
-    estimator = estimator.loc[estimator.pdb_location < 98]
-    estimator.to_csv('../../output/constrain/' + ab_name + '/' + ab_name + '_estimator.csv')
-    
-    # look at impact of potential mutation at location 
-    estimator_norm = estimator.coefficient.abs()/estimator.coefficient.max()
-    print(estimator_norm)
-    estimator['norm'] = estimator_norm
-
-    sorted = estimator.sort_values('coefficient').reset_index()
-
-    title = ab_name + ' features affecting IC50'
-    pu.barplot(sorted, x='mut', y='coefficient', hue = 'wild_type', palette = 'Reds_r', title= title, figsize=(8,4)) 
-
-    sorted = estimator.sort_values('norm').reset_index()
-
-    title = 'Predicted locations for ' + ab_name + ' optimization'
-    labels = ['','Mutation Impact']
-    pu.barplot(sorted, x='pdb_location', y='norm', hue= 'wild_type', palette = 'Reds_r', title= title, figsize=(6,4), labels=labels) 
-    
-    estimator = estimator.wt_pdb_foldx.unique()
-
-    print (estimator)
-
-    ' Scan the antibody at locations found by estimator '
-    '''
-    for p in ab_list:
-        ap.scan (scantype='location', scanvalues = estimator, scanmolecule= 'ab', antibody = ab_name, pdblist = [p], pdbdir=repair_dir, outdir=scan_dir)
-        '''
-
-    print(p1)
-    print(p2)
 
     ' Find ddG (antibody/receptor) binding after antibody scanning '
     ap.energy (antibody=ab_name, pdb=p1[:-4], pdb_less=p2[:-4], scantype = 'ab', energy_type='ddgbind', indir = scan_dir, outdir=energy_dir)
+
+
+    exit()
 
     ' Constrain mutation locations where ddG < 0, wild type == True, based on some cutoffs '
     filename= energy_dir + 'ddgbind_' + ab_name + '_ab_scanning.txt'

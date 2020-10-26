@@ -8,9 +8,9 @@ import energy
 filename = '../../output/estimator/NeutSeqData_VH3-53_66_aligned_mapped_coefficients.csv'
 file_ab_locations = '../../data/location/C105_locations.csv'
 
-ab_names = ['B38', 'C105','CC121', 'CB6', 'COVA2-39','CV30' ,'REG10987', 'REG10933']
-pdb_names = ['7bz5', '6xcm', '6xc3', '7c01', '7jmp', '6xe1','6xdg_REG10987', '6xdg_REG10933']
-rbd_chains = ['A', 'C', 'C', 'A', 'A', 'E', 'E','E']
+ab_names = ['B38', 'C105','CC121', 'CB6', 'COVA2-39','CV30' ,'REG10987', 'REG10933', 'S309']
+pdb_names = ['7bz5', '6xcm', '6xc3', '7c01', '7jmp', '6xe1','6xdg_REG10987', '6xdg_REG10933', '6wps']
+rbd_chains = ['A', 'C', 'C', 'A', 'A', 'E', 'E','E' ,'E']
 
 ab_names = [ab_names[7]]
 pdb_names = [pdb_names[7]]
@@ -38,16 +38,20 @@ mutate_dirs = dict(zip(pdb_names,[ '../../output/mutate/' + ab +'/' for ab in ab
 
 
 ab_name = ab_names[0]
-p1 = ab_name + '_Repair.pdb'
-p2 = ab_name + '_Repair_less_ab_Repair.pdb'
+pdb_name = pdb_names[0]
 
-ab_list = [p1, p2]
+p1 = pdb_name + '_Repair.pdb'
+p2 = pdb_name + '_Repair_less_ab_Repair.pdb'
+
+ab_list = [p2]
 repair_dir = repair_dirs[ab_pdb[ab_name]]
 scan_dir = scan_dirs[ab_pdb[ab_name]]
+energy_dir = energy_dirs[ab_pdb[ab_name]]
+
 
 ''' Run mutational scanning on viral receptor unbound and bound to mutated antibody '''
 
-lowerbound = 400
+lowerbound = 414
 upperbound = 520 
 
 print('about to read energy location')
@@ -58,3 +62,11 @@ scanvalues = mutations.values
     
 print('about to scan')
 ap.scan (scantype='location', scanvalues = scanvalues, scanmolecule= 'virus', antibody = ab_name, pdblist = ab_list , pdbdir=repair_dir, outdir=scan_dir)
+
+
+print('about to calculate energy')
+
+print (p1) 
+print(p2) 
+ap.energy (antibody = ab_name , pdb= p1[:-4] , pdb_less = p2[:-4], scantype='virus', energy_type ='ddgbind', indir = scan_dir, outdir = energy_dir)
+

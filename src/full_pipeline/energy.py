@@ -4,6 +4,9 @@ import sys
 import foldx as foldx
 import structure as su
 
+import matplotlib.pyplot as plt 
+import seaborn as sb 
+
 data_path = '../../data/'
 estimator_path = data_path + 'estimator/'
 location_path = data_path + 'location/'
@@ -90,9 +93,16 @@ def constrain_estimator_features(data, cutoffmin =0, cutoffmax=0, topmuts = 10, 
     """ Constrain the estimator features 
     """
 
-    indices = (data['wild_type'].astype(bool) == True) & (data['coefficient'].astype(float) >=cutoffmax)
-    indices = indices & (data[filter_name] == filter)
-    mut = data.loc[indices]
+    indices_wt = (data['wild_type'].astype(bool) == True) & (data['coefficient'].astype(float) >=cutoffmax)
+    indices_not_wt = (data['wild_type'].astype(bool) == False) & (data['coefficient'].astype(float) <= cutoffmin)
+    indices_filter = (data[filter_name] == filter)
+
+    indices = indices_wt + indices_not_wt
+    mut= data.loc[indices]
+    mut = mut.loc[indices_filter]
+
+    print (len(mut))
+
     mut = mut.loc[mut['coefficient'].astype(float).nlargest(n=topmuts).index]
     mut['location'] = mut['location'].astype(str)
 

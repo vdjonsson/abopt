@@ -1,9 +1,9 @@
 import pandas as pd 
 import seaborn as sb 
 import matplotlib.pyplot as plt 
-import antibody_pipeline_vdj as ab 
+import antibody_pipeline as ab 
 import numpy as np 
-import utils as u
+#import utils as u
 
 context = 'paper' 
 style='ticks'
@@ -14,7 +14,7 @@ est_path = '../../output/estimator/'
 data_path = '../../data/'
 ml_path = '../../data/ml_data/'
 
-
+show = False 
 def plot_correlation(data, fignum):
 
     dcor = data.corr('pearson')
@@ -222,6 +222,41 @@ def plot_antibody_viral_fitness():
 
     plot_scatter_joint(ab_name_graph, merged, y=bloomval, x=ddgsval,hue='mutation', leg=False, kind='scatter')
 
+
+def barplot(data,x, y, hue, palette, title, figsize, labels=None):
+
+    plt.figure(figsize=figsize)
+    sb.set(context='talk', style='ticks')
+    sb.barplot(data=data, x= x, y= y, hue = hue, palette=palette, dodge=False ,ci=None)
+    plt.xticks(rotation=90)
+    sb.despine()
+    plt.title(title)
+    plt.legend([])
+    if labels != None: 
+        plt.ylabel(labels[1])
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig('../../output/figs/' + title +'.png')
+    if show:
+        plt.show()
+
+def violinplot(data,x, y, hue, palette, title, figsize, labels):
+
+    plt.figure(figsize=figsize)
+    sb.set(context='talk', style='ticks')
+    #sb.violinplot(data=data, x=x, y=y, color='white', scale='width')
+    sb.boxplot(data=data, x=x, y=y, color='white', linewidth=0.6)
+    sb.stripplot(data=data, x=x, y=y, hue = hue, palette=palette, alpha=0.7)
+    plt.axhline(0, lw= 0.7, color='grey')
+    plt.ylabel(labels[1])
+    plt.legend([])
+    plt.xticks(rotation=90)
+    sb.despine()
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig('../../output/figs/' + title +'.png')
+    if show:
+        plt.show()
  
 def bar_plot_ddgs(data, ab_name, figsize):
 

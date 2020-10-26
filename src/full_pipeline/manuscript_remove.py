@@ -47,10 +47,9 @@ for ab_name in ab_names:
     pdb_name = ab_pdb[ab_name]
     repair_dir = repair_dirs[pdb_name]
 
-
     pdb_file_name = pdb_name + '.pdb'
     labeled_chains = structure.label_chains(pdb_name)
-    #ep = structure.find_epitopes(pdb_dirs[pdb_name], pdb_file_name, labeled_chains, 6)    
+    ep = structure.find_epitopes(pdb_dirs[pdb_name], pdb_file_name, labeled_chains, 6)    
 
     epitope = pd.read_csv('../../data/location/' + pdb_name + '_epitopes.csv')
 
@@ -67,9 +66,10 @@ for ab_name in ab_names:
     for mut in mutations: 
         print ('mutation ' + mut)
         mut_file = pdb_name + '_Repair_' + mut + '_Repair.pdb'
-        mut_file_less_ab = pdb_name + '_Repair_' + mut + '_Repair_less_ab.pdb'
-
-        ap.repair(pdb_dirs = [remove_dir], pdb_list=[mut_file_less_ab], out_dirs=[repair_dir])
+        #mut_file_less_ab = pdb_name + '_Repair_' + mut + '_Repair_less_ab.pdb'
+        
+        ap.remove(pdb_dirs = [repair_dir], pdb_list = [mut_file] , chains= labeled_chains, chain_type= 'antibody', out_dirs = [remove_dir])
+        #ap.repair(pdb_dirs = [remove_dir], pdb_list=[mut_file_less_ab], out_dirs=[repair_dir])
 
         #exit()
         #print(mut_file)

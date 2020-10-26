@@ -1,9 +1,9 @@
 import pandas as pd 
 import seaborn as sb 
 import matplotlib.pyplot as plt 
-import antibody_pipeline as ab 
+import antibody_pipeline_vdj as ab 
 import numpy as np 
-#import utils as u
+import utils as u
 
 context = 'paper' 
 style='ticks'
@@ -12,6 +12,7 @@ out_fig ='../../output/figs/'
 out_tmp ='../../output/tmp/'
 est_path = '../../output/estimator/'
 data_path = '../../data/'
+
 ml_path = '../../data/ml_data/'
 
 ab_names = ['CB6', 'C105', 'B38','CC12.1', 'ACE2']
@@ -275,7 +276,7 @@ def convert_to_simple_mutation(ddgs):
     ddgs['location'] = ddgs.mut_chain.str[4:-1]
     ddgs['mut'] = ddgs.mut_chain.str[-1:]
 
-    #u.write(ddgs)
+    u.write(ddgs)
     ddgs = ddgs.loc[ddgs.wt_three !='H2S']
 
 
