@@ -1,0 +1,1 @@
+mut_chain,dg,dg_less,pdb_location,mut,wt,chain,wildtype,ddg_bind

@@ -19,20 +19,22 @@ pdb_names = ['7bz5', '6xcm', '6xc3', '7c01', '7jmp', '6xe1','6xdg_REG10987', '6x
 rbd_chains = ['A', 'C', 'C', 'A', 'A', 'E', 'E','E']
 
 
+
 abs = ab_names 
 pdbs = pdb_names 
-ab_names = ['C002-S1', 'C002-S2','C104-S1', 'C110', 'C119', 'C121-S1', 'C121-S2','C135', 'C144']
-pdb_names = ['7K8S', '7K8T', '7K8U', '7K8V', '7K8W', '7K8X', '7K8Y', '7K8Z', '7K90']
+ab_names = ['C002-S1', 'C002-S2','C104', 'C110', 'C119', 'C121-S1', 'C121-S2','C135', 'C144','C105_TH28I_YH58F']
+pdb_names = ['7K8S', '7K8T', '7K8U', '7K8V', '7K8W', '7K8X', '7K8Y', '7K8Z', '7K90', '6xcm_Repair_TH28I_YH58F']
 
+ab_names = [ab_names[2]]
+pdb_names = [pdb_names[2]]
 
-
+#  Mutate C105 TH28I and YH58F 
 #abs = abs+ ab_names 
 #pdbs = pdbs+ pdb_names 
 #ablist = pd.DataFrame()
 
 #ablist['antibody'] = abs 
 #ablist['pdb'] = pdbs 
-
 
 #ablist.to_csv('../../manuscript/antibody_list.txt', index=None)
 
@@ -65,12 +67,28 @@ energy_dirs = dict(zip(pdb_names,[ '../../output/energy/' + ab +'/' for ab in ab
 design_dirs = dict(zip(pdb_names,[ '../../output/design/' + ab +'/' for ab in ab_names]))
 mutate_dirs = dict(zip(pdb_names,[ '../../output/mutate/' + ab +'/' for ab in ab_names]))
 
+#ab='C105'
+#p1 = '6xcm_Repair.pdb'
+#mutations = pd.Series('TH28I,YH58F')
+#repair_dir = '../../output/repair/' + ab +'/' 
+#mutate_dir = '../../output/mutate/' + ab +'/' 
+
+#ap.mutate(p1, mutations, repair_dir, mutate_dir)
+
+#mutated_pdb = '6xcm_Repair_TH28I_YH58F.pdb'
+#ap.repair(pdb_dirs = [mutate_dir], pdb_list=[mutated_pdb], out_dirs=[repair_dir])
+
+#exit()
+#mutated_pdbs = [ p1[:-4] + '_' + mut + '.pdb' for mut in mutations]
+
+
+
 ''' Generate all the data: run estimator, energy minimization  '''
 'Repair antibody/viral receptor original structure '
 
 print(list(pdb_files.values()))
 
-ap.repair(pdb_dirs = list(pdb_dirs.values()), pdb_list= list(pdb_files.values()), out_dirs=list(repair_dirs.values()))
+#ap.repair(pdb_dirs = list(pdb_dirs.values()), pdb_list= list(pdb_files.values()), out_dirs=list(repair_dirs.values()))
 
 repaired_wt_pdb = [ pdb +'_Repair.pdb' for pdb in pdb_names]
 repaired_wt_dict = dict(zip(pdb_names, repaired_wt_pdb))
