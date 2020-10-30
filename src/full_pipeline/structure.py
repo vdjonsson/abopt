@@ -4,8 +4,8 @@ import wget
 from biopandas.pdb import PandasPdb
 
 
-aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR','TRP', 'TYR','VAL','NA']
-aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'Y','V' ,'X']
+aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR','TRP', 'TYR','VAL','NA' ,'H2S', 'H1S']
+aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'Y','V' ,'X', 'X', 'H']
 aa_1to3_dic = dict(zip(aa_single, aa_three))
 aa_3to1_dic = dict(zip(aa_three, aa_single))
 
@@ -138,8 +138,7 @@ def find_epitopes(pdb_dir, pdb_file_name, labeled_chains, distance):
 def convert_pdb_to_fasta_style(pdb_mutations):
     mut_one = []
     for mut in pdb_mutations:
-        if mut !='H2S':
-            mut_one.append(aa_3to1_dic[mut])
+        mut_one.append(aa_3to1_dic[mut])
     return pd.Series(mut_one)
 
 def convert_pdb_to_list(ab_name, pdb_name, spec_chain='C' , min_res=400, max_res=520):

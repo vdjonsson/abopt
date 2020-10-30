@@ -3,7 +3,6 @@ import os
 import sys 
 import foldx as foldx
 import structure as su
-
 import matplotlib.pyplot as plt 
 import seaborn as sb 
 
@@ -64,7 +63,8 @@ def calculate_ddg_bind(antibody, pdb, pdb_less, scantype='virus', indir='./', ou
 
     # mut = wt, chain, mutation
     ddg['pdb_location'] = ddg.mut_chain.str[4:-1].astype(str)
-    ddg['mut'] = su.convert_pdb_to_fasta_style(ddg.mut_chain.str[0:3]) + ddg.mut_chain.str[3:]
+    ddg['mut'] = su.convert_pdb_to_fasta_style(ddg.mut_chain.str[0:3]) + ddg.mut_chain.str[-4:]
+
     ddg['wt'] = su.convert_pdb_to_fasta_style(ddg.mut_chain.str[0:3]) + ddg.mut_chain.str[3:4] + ddg.pdb_location
     ddg['chain'] = ddg.mut_chain.str[3]
     ddg['wildtype'] = ddg.mut.str[0] == ddg.mut.str[-1]
@@ -72,6 +72,10 @@ def calculate_ddg_bind(antibody, pdb, pdb_less, scantype='virus', indir='./', ou
     ddg_name = 'ddg_bind'
     ddg[ddg_name] = ddg['dg'] - ddg['dg_less']
     
+    ''' Output the file to the appropriate directory ''' 
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    ddg.to_csv(outdir + 'ddg_bind_' + antibody + scantype + '_scanning.csv', index=None)
     print (ddg.head())
     return ddg
 
@@ -161,8 +165,6 @@ def build_optimal_antibody_structure_mutations(ab_name, p, p_less, upper_bound_d
     run_multiple_repair_model(ab_name,p, mutations)
     run_multiple_repair_model(ab_name,p_less, mutations)
     return mutations
-
-
 
 
 def write_to_mutations_file(mutations, mutations_filename, out_dir):

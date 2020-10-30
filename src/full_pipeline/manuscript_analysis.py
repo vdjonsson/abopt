@@ -252,34 +252,41 @@ def viral_scanning_binding():
         ' Find ddG (antibody/receptor) binding after viral scanning '
         ap.energy (antibody=ab, pdb=pdb_file, pdb_less=pdb_less_file, scantype = 'virus', energy_type='ddgbind', indir = scan_dir, outdir=energy_dir)
 
+''' UMAP antibody distance '''
+def umap_antibody_distance(antibody_virus_landscape):
 
-def umap_antibody_distance(mm):
+    mm = antibody_virus_landscape
 
-    print(mm)
-    # Graph distances between antibodies 
+    mm = mm.dropna(axis=0)
+    ''' Graph distances between antibodies  '''
     # First try straight UMAP, color by antibody 
 
     # UMAP distances between antibodies 
-    muts = mm.columns.values[1:]
-    abs = mm.antibody.values
+    muts = mm.mut.values
+    abs = mm.columns.values[1:]
+
+    print(abs) 
+    print(muts) 
 
     fitness_data = mm.iloc[:,1:].values
     reducer = umap.UMAP(n_neighbors=2,min_dist=0.0,n_components=2)
     scaled_fitness_data = StandardScaler().fit_transform(fitness_data)
     embedding = reducer.fit_transform(scaled_fitness_data)
 
-    antibodies = dict(zip(abs,range(len(abs))))
-    strab = ' '.join(map(str, ab_names))
-    c= [sb.color_palette('Paired')[x] for x in mm.antibody.map(antibodies)]
+    print (embedding)
+    
+    #antibodies = dict(zip(abs,range(len(abs))))
+    #strab = ' '.join(map(str, ab_names))
+    #c= [sb.color_palette('Paired')[x] for x in mm.antibody.map(antibodies)]
 
     df = pd.DataFrame(embedding,columns=['dim1', 'dim2'])
-    df['ab'] = ab_names 
+    #df['ab'] = ab_names 
 
     # PLOT 
     sb.set(context='paper', style='white', font_scale=1.2)
     f,ax =plt.subplots(figsize=(3.5,3.5))
     sb.set(context='paper')
-    sb.scatterplot(data = df, x= 'dim1', y = 'dim2',s=80, hue='ab', legend=False)
+    sb.scatterplot(data = df, x= 'dim1', y = 'dim2',s=80, legend=False)
     sb.despine()
     plt.gca().set_aspect('equal', 'datalim')
     e = 0.07
@@ -310,7 +317,6 @@ def combine_data():
         df = pd.read_table(energy_dir + filen, ',')
         df['antibody'] = ab
         df['mut_nochain'] = df.mut.str[0] + df.mut.str[2:]
-
 
         # Filter o, a, e, and proline mutations from FoldX
         df['mut'] = df.mut.str[-1]
@@ -441,7 +447,7 @@ def combine_data():
     print (mm.columns)
     mm['gloc'] = mm.mut_nochain.str[1:-1].astype(int)
 
-    # mean, mean of postives, 
+    # meman, mean of postives, 
     grouped = mm.groupby('gloc').mean().reset_index().iloc[:,1:]
     grouped['gloc'] = mm.gloc.unique()
 
@@ -461,7 +467,6 @@ def combine_data():
     cols = mm.columns[1:-1]
     print(cols)
     
-
     # plot antibody distance
     umap_antibody_distance(mm)
 
@@ -470,16 +475,16 @@ def combine_data():
 
 #plot_ic50()        
 
-ab_name = 'C105'
+#ab_name = 'C105'
 
-pdblocs = plot_estimator_locations(ab_name)
+#pdblocs = plot_estimator_locations(ab_name)
 
 
-pdblocs = [27, 28, 58, 95, 96,]
-plot_energy_locations(ab_name, pdblocs)
+#pdblocs = [27, 28, 58, 95, 96,]
+#plot_energy_locations(ab_name, pdblocs)
 #plot_optimized_ab_locations(ab_name)
 
 
 #viral_scanning_binding()
 #exit()
-combine_data()
+#combine_data()

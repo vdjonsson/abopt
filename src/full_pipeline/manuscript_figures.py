@@ -9,174 +9,61 @@ import matplotlib.pyplot as plt
 import numpy as np 
 import scipy.stats as stats 
 from sklearn import preprocessing
+import logomaker
+import manuscript_analysis as ma
+
+''' This file will run all the figure plotting for the paper  ''' 
+
+''' This is a biorender image ''' 
+def figure1a(): 
+    print('This is a biorender image') 
 
 
-filename = '../../output/estimator/NeutSeqData_VH3-53_66_aligned_mapped_coefficients.csv'
-file_ab_locations = '../../data/location/C105_locations.csv'
+''' Natalie: add pointer to run your code here ''' 
+def figure1b():
+    ''' Natalie: add pointer to run your code here ''' 
+    print ('ND add code') 
 
-ab_names = ['B38', 'C105','CC121', 'CB6', 'COVA2-39','CV30']
-pdb_names = ['7bz5', '6xcm', '6xc3', '7c01', '7jmp', '6xe1']
-rbd_chains = ['A', 'C', 'C', 'A', 'A', 'E']
+''' logoplots '''
+def figure1c():
 
-ab_names = ['B38', 'C105', 'CB6', 'COVA2-39','CV30']
-pdb_names = ['7bz5', '6xcm', '7c01', '7jmp', '6xe1']
-rbd_chains = ['A', 'C', 'A', 'A', 'E']
+    crp_df = -logomaker.get_example_matrix('crp_energy_matrix',
+                                        print_description=False)
 
-ab_names = [ab_names[1]]
-pdb_names = [pdb_names[1]]
-rbd_chains = [rbd_chains[1]]
+    print(crp_df)
+    # create Logo object
+    crp_logo = logomaker.Logo(crp_df,
+                          shade_below=.5,
+                          fade_below=.5,
+                          font_name='Arial Rounded MT Bold')
 
-print (ab_names)
-print (pdb_names)
-
-pdb_rbd =dict(zip(pdb_names, rbd_chains))
-
-# input
-
-ab_pdb = dict(zip(ab_names, pdb_names))
-
-print(ab_pdb)
-pdb_files = dict(zip(pdb_names, [pdb +'.pdb' for pdb in pdb_names]))
-pdb_dirs = dict(zip(pdb_names,[ '../../data/pdb/' + ab +'/unrepaired/' for ab in ab_names]))
-repair_dirs = dict(zip(pdb_names, [ '../../output/repair/' + ab +'/' for ab in ab_names]))
-remove_dirs = dict(zip(pdb_names,  [ '../../output/remove/' + ab +'/' for ab in ab_names]))
-constrain_dirs =dict(zip(pdb_names, [ '../../output/constrain/' + ab +'/' for ab in ab_names]))
-scan_dirs = dict(zip(pdb_names,[ '../../output/scan/' + ab +'/' for ab in ab_names]))
-energy_dirs = dict(zip(pdb_names,[ '../../output/energy/' + ab +'/' for ab in ab_names]))
-design_dirs = dict(zip(pdb_names,[ '../../output/design/' + ab +'/' for ab in ab_names]))
-mutate_dirs = dict(zip(pdb_names,[ '../../output/mutate/' + ab +'/' for ab in ab_names]))
-
-for ab_name in ab_names: 
-
-    ' Set up directories '
-    p1 = ab_pdb[ab_name] + '_Repair.pdb'
-    p2 = ab_pdb[ab_name] + '_Repair_less_virus_Repair.pdb'
- 
-    ab_list = [p1, p2]
-    repair_dir = repair_dirs[ab_pdb[ab_name]]
-    scan_dir = scan_dirs[ab_pdb[ab_name]]
-    energy_dir = energy_dirs[ab_pdb[ab_name]]
-    design_dir = design_dirs[ab_pdb[ab_name]]
-    mutate_dir = mutate_dirs[ab_pdb[ab_name]]
-    remove_dir = remove_dirs[ab_pdb[ab_name]]
-    constrain_dir = constrain_dirs[ab_pdb[ab_name]]    
-
-
-    ' Find ddG (antibody/receptor) binding after antibody scanning '
-    ap.energy (antibody=ab_name, pdb=p1[:-4], pdb_less=p2[:-4], scantype = 'ab', energy_type='ddgbind', indir = scan_dir, outdir=energy_dir)
-
-
-    exit()
-
-    ' Constrain mutation locations where ddG < 0, wild type == True, based on some cutoffs '
-    filename= energy_dir + 'ddgbind_' + ab_name + '_ab_scanning.txt'
-    energies = pd.read_csv(filename)
-
-    ' Graph all energies at the locations found by estimator ' 
-    cs = energies.sort_values('ddg_bind').reset_index()
-    title = 'FoldX binding energies ' + ab_name + ' mutations'
-    labels=['',"$\Delta\Delta G_{bind}$"]
+    # style using Logo methods
+    crp_logo.style_spines(visible=False)
+    crp_logo.style_spines(spines=['left', 'bottom'], visible=True)
+    crp_logo.style_xticks(rotation=90, fmt='%d', anchor=0)
     
-    # normalize between between -1 1 
-    locations = [27,28,58,95, 96]
-    #cs = cs.loc[cs.pdb_location.isin(locations)]
-    cs['norm'] = stats.zscore(cs.ddg_bind.values)
+    # style using Axes methods
+    crp_logo.ax.set_ylabel("$-\Delta \Delta G$ (kcal/mol)", labelpad=-1)
+    crp_logo.ax.xaxis.set_ticks_position('none')
+    crp_logo.ax.xaxis.set_tick_params(pad=-1)
+    plt.show()
 
-    title = 'FoldX binding energies ' + ab_name + ' all locations'
-    pu.violinplot(cs, x='pdb_location', y='norm', hue = 'mut', palette = 'Set1', title= title, figsize=(6,5), labels=labels)
 
-    ap.constrain (constraintype ='energy', constrainfile=filename, antibody=ab_name, cutoff = [-1e4, 0.4], top=1000, out_dir=constrain_dir)
-    constrained_energies = pd.read_csv(constrain_dir + ab_name +'_energies.csv')
+def figure2c():
 
-    print(constrained_energies)
+    print('figure 2c') 
+
+    ''' Read ab configuration file '''
+    abdf = pd.read_table('../../manuscript/antibody_list.txt', sep=',') 
     
-    ' Graph mutations found by FoldX '
-    cs = constrained_energies.sort_values('ddg_bind').reset_index()
-    title = 'FoldX binding energies ' + ab_name + ' all mutations'
-    #pu.barplot(data=cs, x='mut', y='ddg_bind', hue = 'pdb_location', palette = 'Set1', title= title, figsize=(16,4), labels=labels)
+    ab_names = abdf.antibody.astype(str).values
+    ab_class = abdf['class'].astype(str).values
 
-    ' Constrain potential mutations to top 2 at each location and graph potential mutations '
-    print(constrained_energies)
+    ab_class_dict = dict(zip(ab_names, ab_class))
 
-    const_mutations = pd.DataFrame()
-    for location in constrained_energies.pdb_location.unique():
-        tmp = constrained_energies.loc[constrained_energies.pdb_location== location]
-        tmp = tmp.loc[tmp.wildtype == False]
-        ss = tmp.nsmallest(n=2, columns=['ddg_bind'])
-        const_mutations = pd.concat([const_mutations, ss])
+    antibody_virus_landscape = pd.read_csv('../../output/merge/rbd_ab_fitness.csv')    
 
-    ' Graph these single mutants '
-    const_mutations = const_mutations.sort_values('ddg_bind').reset_index()
-    const_mutations.to_csv(design_dir + ab_name + '_top2_design.csv')
-    title = 'FoldX binding energies ' + ab_name + ' constrained'
-    pu.barplot(data=const_mutations, x='mut', y='ddg_bind', hue = 'pdb_location', palette = 'Set1', title= title, figsize=(7,4), labels=['', "$\Delta\Delta G_{bind}$"]) 
-
-    noloc = [27,96,28,58]
-
-    ' Mutate antibody and save the new PDB structure '
-    mutations = pd.read_csv(design_dir + ab_name + '_top2_design.csv')
-    mutations = mutations.loc[~mutations.pdb_location.isin(noloc)]['mut']    
-    print('*********** MUTATING ********')
-    ap.mutate(p1, mutations, repair_dir, mutate_dir)
-    mutated_pdbs = [ p1[:-4] + '_' + mut + '.pdb' for mut in mutations]
-
-    print(mutated_pdbs)
-
-    ' Now scan for double mutants '
-    double_muts = pd.DataFrame()
-    for mutated_pdb in mutated_pdbs:
-        
-        ' Repair the mutated antibody and save the new PDB structure '
-        ap.repair(pdb_dirs = [mutate_dir], pdb_list=[mutated_pdb], out_dirs=[repair_dir])
-        repaired_mutated_pdb = mutated_pdb[:-4] + '_Repair.pdb'
-
-        ' Remove virus from structure and repair the unbound mutated antibody, save to new PDB structure ' 
-        labeled_chains = structure.label_chains(mutated_pdb[0:4])
-        print(labeled_chains)
-
-        print('*************** REMOVING **************')
-        ap.remove(pdb_dirs = [repair_dir], pdb_list = [repaired_mutated_pdb] , chains= labeled_chains, chain_type= 'virus', out_dirs = [remove_dir])
-        print('*************** REPAIR **************')
-        ap.repair(pdb_dirs = [remove_dir], pdb_list=[repaired_mutated_pdb[:-4] + '_less_virus.pdb'], out_dirs=[repair_dir])
+    ma.umap_antibody_distance(antibody_virus_landscape)
 
 
-        pb = repaired_mutated_pdb[:-4]+ '.pdb'
-        p = repaired_mutated_pdb[:-4] + '_less_virus_Repair.pdb'
-
-        print(pb)
-        print(p)
-
-        # get mutations 
-        mutscan = []
-        for mutation in mutations:
-            if mutation not in p:
-                mutloc= mutation[2:-1]
-                if mutloc not in p:
-                    mutscan.append(mutation)
-        
-        # scan antibody with virus and without bound virus
-        print('*************** SCAN PB **************')            
-        ap.scan (scantype='location', scanvalues = mutscan, scanmolecule= 'ab', antibody = ab_name, pdblist = [pb], pdbdir=repair_dir, outdir=scan_dir)
-        print('*************** SCAN PB LESS  **************')            
-        ap.scan (scantype='location', scanvalues = mutscan, scanmolecule= 'ab', antibody = ab_name, pdblist = [p], pdbdir=repair_dir, outdir=scan_dir)
-
-        ' Calculate the binding energy ' 
-        ap.energy(antibody=ab_name, pdb=repaired_mutated_pdb[:-4], pdb_less=p[:-4], scantype = 'ab', energy_type='ddgbind', indir = scan_dir, outdir=energy_dir)
-        db = pd.read_table(energy_dir + 'ddgbind_' + ab_name + '_ab_scanning.txt', sep=',')
-        db['mut1'] = mutated_pdb[12:-4]
-        print(db.columns)
-        db['mutant'] = db['mut1'] + '-' + db['mut'] 
-        db.to_csv(energy_dir + 'ddgbind_' + ab_name + '_' + mutated_pdb[12:-4] + '_ab_scanning.txt', index=None)
-
-        double_muts= pd.concat([db, double_muts])
-
-
-    double_muts.to_csv(energy_dir + 'ddg_double.csv')
-
-    ''' Merge the double mutant position scan data '''
-    # constrain to < 0.4
-    double_muts = double_muts.loc[double_muts.dg <= 0]
-    sorted = double_muts.sort_values('ddg_bind').reset_index()
-
-    title = 'Predicted double mutations for ' + ab_name + ' optimization'
-    pu.barplot(sorted, x='mutant', y='dg', hue = 'mut1', palette = 'Reds_r', title= title, figsize=(10,4)) 
+figure2c()
