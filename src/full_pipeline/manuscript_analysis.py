@@ -256,48 +256,19 @@ def viral_scanning_binding():
 def umap_antibody_distance(antibody_virus_landscape):
 
     mm = antibody_virus_landscape
-
     mm = mm.dropna(axis=0)
+
     ''' Graph distances between antibodies  '''
-    # First try straight UMAP, color by antibody 
-
-    # UMAP distances between antibodies 
-    muts = mm.mut.values
     abs = mm.columns.values[1:]
+    fitness_data = mm.iloc[:,1:].values.transpose()
 
-    print(abs) 
-    print(muts) 
-
-    fitness_data = mm.iloc[:,1:].values
-    reducer = umap.UMAP(n_neighbors=2,min_dist=0.0,n_components=2)
+    reducer = umap.UMAP(n_neighbors=5,min_dist=0.0,n_components=2)
     scaled_fitness_data = StandardScaler().fit_transform(fitness_data)
-    embedding = reducer.fit_transform(scaled_fitness_data)
+    embedding = pd.DataFrame(reducer.fit_transform(scaled_fitness_data), columns={'dim1','dim2'})
 
-    print (embedding)
-    
-    #antibodies = dict(zip(abs,range(len(abs))))
-    #strab = ' '.join(map(str, ab_names))
-    #c= [sb.color_palette('Paired')[x] for x in mm.antibody.map(antibodies)]
+    return embedding 
 
-    df = pd.DataFrame(embedding,columns=['dim1', 'dim2'])
-    #df['ab'] = ab_names 
 
-    # PLOT 
-    sb.set(context='paper', style='white', font_scale=1.2)
-    f,ax =plt.subplots(figsize=(3.5,3.5))
-    sb.set(context='paper')
-    sb.scatterplot(data = df, x= 'dim1', y = 'dim2',s=80, legend=False)
-    sb.despine()
-    plt.gca().set_aspect('equal', 'datalim')
-    e = 0.07
-    d = -0.1
-    for j, lab in enumerate(df.ab):
-        ax.annotate(lab, (df.dim1[j] +d, df.dim2[j]+e ))
-                
-    plt.title('UMAP')
-    plt.tight_layout()
-    plt.savefig(fig_dir + 'UMAP_virus_scan_WT_ab.png', dpi =dpi)
-    plt.show()
 
 
 # FITNESS LANDSCAPE VIRUS AND ANTIBODY 
