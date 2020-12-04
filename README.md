@@ -247,4 +247,4 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 `antibody_pipeline version` prints version number.
 
 ### cite 
-`antibody_pipeline cite` prints citation information.
+`antibody_pipeline cite` prints citation information. 
