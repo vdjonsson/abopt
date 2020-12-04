@@ -1,4 +1,4 @@
-# abopt
+# AbOpt
 
 AbOpt is a tool for antibody optimization.  
 
