@@ -48,7 +48,7 @@ scan_dir = scan_dirs[ab_pdb[ab_name]]
 ''' Run mutational scanning on viral receptor unbound and bound to mutated antibody '''
 
 lowerbound = 400
-upperbound = 520 
+upperbound = 700 
 
 print('about to read energy location')
 apdb, df = energy.read_pdb_locations(file_location='../../data/location/SARS_CoV_2_RBD_locations.csv')
@@ -58,3 +58,12 @@ scanvalues = mutations.values
     
 print('about to scan')
 ap.scan (scantype='location', scanvalues = scanvalues, scanmolecule= 'virus', antibody = ab_name, pdblist = ab_list , pdbdir=repair_dir, outdir=scan_dir)
+
+
+int main(int argc, char *argv[]) {
+    printf("Arguments count: %d\n", argc);
+    for (int i = 0; i < argc; i++) {
+        printf("Argument %6d: %s\n", i, argv[i]);
+    }
+    return 0;
+}

@@ -166,8 +166,8 @@ def heatmap_ab_sensitivity(ddgs,title='hm'):
     ddgs = ddgs.transpose()
 
     sb.set(context=context, style=style)
-    #plt.figure(figsize=(12,2.5))
-    sb.heatmap(ddgs, square=False,cmap='RdBu_r', vmin=-1, vmax=1)
+    plt.figure(figsize=(12,2.5))
+    sb.heatmap(ddgs, square=False,cmap='RdBu_r')
     plt.title('ddg(ab/RBD)<0 normalized')
     plt.tight_layout()
     plt.savefig(out_fig + title + '.png', dpi=dpi)

@@ -7,6 +7,7 @@ import energy
 from scipy import stats
 import numpy as np 
 
+from sklearn.manifold import MDS, TSNE
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt 
 import umap 
@@ -46,6 +47,7 @@ class_names = [class_names[1],class_names[2],class_names[4]]
 rbd_chains = [rbd_chains[1], rbd_chains[2],rbd_chains[4]]
 '''
 
+'''
 print (ab_names)
 print (pdb_names)
 
@@ -69,6 +71,7 @@ fig_dirs = dict(zip(pdb_names,[ '../../output/figs/' + ab +'/' for ab in ab_name
 merge_dir = '../../output/merge/'
 fig_dir = '../../output/figs/'
 
+'''
 
 ''' Plot IC50s for antibodies studied '''
 
@@ -253,7 +256,7 @@ def viral_scanning_binding():
         ap.energy (antibody=ab, pdb=pdb_file, pdb_less=pdb_less_file, scantype = 'virus', energy_type='ddgbind', indir = scan_dir, outdir=energy_dir)
 
 ''' UMAP antibody distance '''
-def umap_antibody_distance(antibody_virus_landscape):
+def learn_antibody_distance(antibody_virus_landscape, alg):
 
     mm = antibody_virus_landscape
     mm = mm.dropna(axis=0)
@@ -262,7 +265,11 @@ def umap_antibody_distance(antibody_virus_landscape):
     abs = mm.columns.values[1:]
     fitness_data = mm.iloc[:,1:].values.transpose()
 
-    reducer = umap.UMAP(n_neighbors=5,min_dist=0.0,n_components=2)
+    if alg == 'UMAP':
+        reducer = umap.UMAP(n_neighbors=5,min_dist=0.0,n_components=2)
+    if alg == 'MDS':
+        reducer = MDS(n_components=2)
+
     scaled_fitness_data = StandardScaler().fit_transform(fitness_data)
     embedding = pd.DataFrame(reducer.fit_transform(scaled_fitness_data), columns={'dim1','dim2'})
 
