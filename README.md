@@ -5,9 +5,6 @@ AbOpt is a tool for antibody optimization. This computational method jointly con
 # NeurIPS LMRL talk 
 https://drive.google.com/file/d/1Zm_ei3fueVl2_HlRLixcX6dNxwPcy2FU/view
 
-For more information, go to: 
-https://github.com/vdjonsson/abopt/wiki
-
 
 # Manual
 
