@@ -1,6 +1,9 @@
-# abopt
+# abopt. 
 
 AbOpt is a tool for antibody optimization. This computational method jointly constrains the antibody design space and solves for antibody cocktails to address virus escape. Our contributions are: a new statistical model, the saturated LASSO (satlasso) for feature selection and a new combinatorial optimization algorithm that inputs fitness landscapes and solves for antibody cocktails that can address escape through virus mutations. 
+
+## Disclaimer: this code is work in progress for clean up. ##
+
 
 # NeurIPS LMRL talk 
 https://drive.google.com/file/d/1Zm_ei3fueVl2_HlRLixcX6dNxwPcy2FU/view
