@@ -438,7 +438,6 @@ def figure_4e():
 
 
     print(melted.head())
-
     
     ''' Reduce set '''
     filtered = melted.loc[melted.antibody.isin(['C105_TH28I_YH58F','C105'])]
@@ -625,12 +624,9 @@ def figure_2b():
     dfb['coefficient_ab']  = dfs.coefficient.abs()
 
     print(dfb.mut.unique()) 
-
     print(dfb.head())
 
-    exit()
     #size_order = dfb.coefficient.sort_values(ascending=True)
-
 
     ''' get a random sixteen antibodies for the poster '''
     #abs = list(dfb.antibody_id.values)
@@ -650,6 +646,9 @@ def figure_2b():
     plt.show()    
 
     print(dfb.antibody_id.unique()) 
+
+#figure_1()
+#figure_2()
 
                     
 #figure_4c()

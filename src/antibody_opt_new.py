@@ -4,6 +4,9 @@ import pandas as pd
 import seaborn as sb 
 import matplotlib.pyplot as plt
 
+
+''' Compute antibody cocktails ''' 
+
 def compute_antibodies(fitness_matrix, k, lmbda1, lmbda2, virus_matrix):
     m,n = fitness_matrix.shape
     num_unmanaged = int(m*k)
@@ -17,13 +20,13 @@ def compute_antibodies(fitness_matrix, k, lmbda1, lmbda2, virus_matrix):
     return c.value
 
 
+''' Import fitness landscapes '''
 def import_fitness_landscapes():
     filepath = '../data/'
     combinepath = '../output/combine/'
     
     filename = 'rbd_ab_fitness'
     virus_filename = 'rbd_ace2_fitness'
-
 
     df = pd.read_csv(filepath+filename+'.csv', sep=',', header=0, index_col=0)
     virus_df = pd.read_csv(filepath+virus_filename+'.csv', sep=',', header=0, index_col=0)
@@ -37,7 +40,6 @@ def import_fitness_landscapes():
 
 ''' Run all the simulations '''
 def run_simulations():
-
 
     df,vdf, fitness_matrix, virus_matrix = import_fitness_landscapes()
 
