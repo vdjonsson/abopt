@@ -2,6 +2,7 @@
 # Tea Freedman-Susskind
 # Jonsson Computational Lab
 # 30 June 2020
+# DEPRECATED 
 
 aa_three = ['ALA','ARG','ASN','ASP','CYS','GLU','GLN','GLY','HIS','ILE', 'LEU', 'LYS', 'MET','PHE', 'PRO','SER', 'THR','TRP', 'TYR','VAL']
 aa_single = ['A','R','N','D','C','E','Q','G','H','I','L','K','M','F', 'P', 'S', 'T','W', 'Y','V']

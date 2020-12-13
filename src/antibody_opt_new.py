@@ -280,8 +280,6 @@ plt.show()
 
 ''' Graph ACE2 ddg greater than zero ''' 
 
-exit()
-
 
 
 
@@ -323,8 +321,6 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig('../output/figs/vcov.png', dpi=300)
 plt.show()
-
-exit()
 
  
 
