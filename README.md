@@ -30,7 +30,7 @@ Typing `antibody_pipeline` will produce the following output:
     epitope       Finds molecular structure binding regions
     energy        Run energy minimization functions 
     merge         Merges several batch runs 
-    optimize      Optimizes antibody combinations to cover mutant viruses
+    cocktail      Solves for antibody combinations to target virus escape mutants
     version       Prints version information
 
 The usage commands are:
@@ -225,13 +225,13 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 
 > `output: merged matrix of binding energies, or coupling energies`
 
-### optimize  
-`antibody_pipeline optimize` generates combinations of antibodies that are optimal for mutant viruses 
+### cocktail
+`antibody_pipeline cocktail ` generates combinations of antibodies that are optimal for mutant viruses 
 
-    usage: OPTIMIZE [-h] --filepath FILEP --filename FILEN --p P_UNMANAGED --l
+    usage: COCKTAIL[-h] --filepath FILEP --filename FILEN --p P_UNMANAGED --l
                  LMBD [--o OUT]
 
-    Uses convex combinatorial optimization to compute optimal antibody cocktail for provided virus mutants.
+    Uses convex combinatorial optimization to compute optimal antibody cocktail given fitness lansdacpes and desired mutation coverage.
 
     optional arguments:
       -h, --help        show this help message and exit
