@@ -13,10 +13,10 @@ https://drive.google.com/file/d/1Zm_ei3fueVl2_HlRLixcX6dNxwPcy2FU/view
 Dependencies: wget, biopandas, scikit-learn, satlasso 
 
 To install necessary packages: 
->   ` pip install wget
->     pip install biopandas
->     pip install scikit-learn
->     pip install satlasso `
+>   ` pip install wget `
+>   ` pip install biopandas `
+>   ` pip install scikit-learn`
+>   ` pip install satlasso `
 
 # Manual
 
