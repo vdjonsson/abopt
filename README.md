@@ -8,6 +8,15 @@ AbOpt is a tool for antibody optimization. This computational method jointly con
 # NeurIPS LMRL talk 
 https://drive.google.com/file/d/1Zm_ei3fueVl2_HlRLixcX6dNxwPcy2FU/view
 
+# Install 
+
+Dependencies: wget, biopandas, scikit-learn, satlasso 
+
+
+pip install wget
+pip install biopandas
+pip install scikit-learn
+pip install satlasso 
 
 # Manual
 
