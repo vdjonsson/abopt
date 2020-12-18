@@ -187,9 +187,13 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 ### scan 
 `antibody_pipeline scan` mutational scanning on a subset of locations or a chain.
 
-> `input: filename of molecular structures to scan`
+> `input: foldx use foldx for mutational scanning `
+> `input: filenames of molecular structures to scan, comma delimited`
+> `input: scantype virus or antibody`
+> `input: chain scan the entire chain`
+> `input: locations range of pdb locations to scan, comma delimited, eg: 400-403,420-423`
 
-> `output: dG of unfolding from molecular structure scanned`
+> `output: dG of unfolding from molecular structure`
 
 ### repair
 `antibody_pipeline repair` repairs an antibody using FoldX RepairPDB. 
