@@ -238,7 +238,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 
 
 ### cocktail
-`abopt cocktail ` generates antibody cocktails that optimize viral mutant coverage and antibody neutralization 
+`abopt cocktail ` generates antibody cocktails that optimize virus mutation coverage and antibody neutralization given fitness landscape data 
 
     usage: COCKTAIL[-h] --filepath FILEP --filename FILEN --p P_UNMANAGED --l
                  LMBD [--o OUT]
