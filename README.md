@@ -38,7 +38,7 @@ Typing `abopt` will produce the following output:
     repair        Repair a molecular structure
     epitope       Finds molecular structure binding regions
     energy        Run energy minimization functions 
-    merge         Merges several batch runs 
+    merge         Merges fitness landscape data  
     cocktail      Solves for antibody combinations to target virus escape mutants
     version       Prints version information
 
@@ -49,7 +49,6 @@ The usage commands are:
 `abopt align` pseudo aligns antibody sequences. The arguments for the align command are:
 
 > `input: sequence heavy and light chains `
-
 > `output: matrix of aligned sequences`
 
 ### distance
@@ -72,6 +71,7 @@ Note: the file contained at filepath/filename.csv must be able to be loaded into
 > `"light_chain": column of amino acid sequences for the light chain of the antibody`
 
 > `"antibody_id": column of identifying string or number for each antibody`
+
 
 ### estimator
 `abopt estimator` generates an estimator given IC50 data. The arguments for the estimator command are:
