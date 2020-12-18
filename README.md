@@ -22,11 +22,11 @@ To install necessary packages:
 
 ## antibody pipeline 
 
-Typing `antibody_pipeline` will produce the following output: 
+Typing `abopt` will produce the following output: 
 
 
-    antibody_pipeline v 0.1 
-    antibody_pipeline <CMD>
+    abopt v 0.1 
+    abopt <CMD>
 
     align         Pseudo align antibody sequences
     distance      Calculate Levenshtein distance between antibody sequences
@@ -46,14 +46,14 @@ The usage commands are:
 
 ### align
 
-`antibody_pipeline align` pseudo aligns antibody sequences. The arguments for the align command are:
+`abopt align` pseudo aligns antibody sequences. The arguments for the align command are:
 
 > `input: sequence heavy and light chains `
 
 > `output: matrix of aligned sequences`
 
 ### distance
-`antibody_pipeline distance` generates a matrix of Levenshtein distances between antibodies. 
+`abopt distance` generates a matrix of Levenshtein distances between antibodies. 
 
     usage: DISTANCE [-h] --filepath FILEP --filename FILEN [--o OUT]
 
@@ -74,7 +74,7 @@ Note: the file contained at filepath/filename.csv must be able to be loaded into
 > `"antibody_id": column of identifying string or number for each antibody`
 
 ### estimator
-`antibody_pipeline estimator` generates an estimator given IC50 data. The arguments for the estimator command are:
+`abopt estimator` generates an estimator given IC50 data. The arguments for the estimator command are:
 
     usage: ESTIMATOR [-h] --filepath FILEP --filename FILEN [--s SAT] [--m] --y Y
                  [--cv CV] [--t TRNSFM] --l1 LMBD1 --l2 LMBD2 --l3 LMBD3
@@ -118,7 +118,7 @@ The following columns are required only if the -m flag is used:
 
 ### map
 
-`antibody_pipeline map` maps coefficients for a specific antibody from FASTA locations (indexed from 0) to provided PDB locations. The arguments for the map command are:
+`abopt map` maps coefficients for a specific antibody from FASTA locations (indexed from 0) to provided PDB locations. The arguments for the map command are:
 
     usage: MAP [-h] --filepath FILEP --filename FILEN --pdb_filepath FILEP
                --pdb_filename FILEN --name NAME [--o OUT]
@@ -156,7 +156,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `"chain": column of indicating chain for each amino acid in the sequence`
 
 ### constrain
-`antibody_pipeline constrain` constrains the features of an estimator. The arguments for the estimator command are:
+`abopt constrain` constrains the features of an estimator. The arguments for the estimator command are:
  constrain(estimator_file, antibody, cutoff , chain, top):
 
 > `input: filename str of path and filename of estimator`
@@ -172,7 +172,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `output: DataFrame of constrained features based on antibody specfic PDB locations`
 
 ### mutate
-`antibody_pipeline mutate` mutates an antibody given a list of mutations, and generates a structure for each mutation. 
+`abopt mutate` mutates an antibody given a list of mutations, and generates a structure for each mutation. 
 
 > `input: filename str of molecular structure to mutate`
 
@@ -185,7 +185,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `output: PDB file of molecular structure mutated`
 
 ### scan 
-`antibody_pipeline scan` mutational scanning on a subset of locations or a chain.
+`abopt scan` mutational scanning on a subset of locations or a chain.
 
 > `input: foldx use foldx for mutational scanning `
 > `input: filenames of molecular structures to scan, comma delimited`
@@ -196,7 +196,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `output: dG of unfolding from molecular structure`
 
 ### repair
-`antibody_pipeline repair` repairs an antibody using FoldX RepairPDB. 
+`abopt repair` repairs an antibody using FoldX RepairPDB. 
 
 > `input: array of filenames of molecular structures to repair`
 
@@ -208,7 +208,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 
 
 ### epitope
-`antibody_pipeline epitope` finds epitope, given an amino acid location for a molecular structure.
+`abopt epitope` finds epitope, given an amino acid location for a molecular structure.
 
 > `input: molecular structure`
 
@@ -219,7 +219,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `output: list of epitopes in the form of chain, PDB locations`
 
 ### energy        
-`antibody_pipeline energy` generates a matrix of folding energies based on running energy minimization for mutational scanning. The arguments for the energy command are:
+`abopt energy` generates a matrix of folding energies based on running energy minimization for mutational scanning. The arguments for the energy command are:
 
 > `input: binding ddG or coupling dddG`
 
@@ -230,7 +230,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `output: matrix of binding energies, or coupling energies`
 
 ### merge 
-`antibody_pipeline merge` merges energy landscape data for multiple structures
+`abopt merge` merges energy landscape data for multiple structures
 
 > `input: binding or coupling`
 
@@ -239,7 +239,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `output: merged matrix of binding energies, or coupling energies`
 
 ### cocktail
-`antibody_pipeline cocktail ` generates combinations of antibodies that are optimal for mutant viruses 
+`abopt cocktail ` generates combinations of antibodies that are optimal for mutant viruses 
 
     usage: COCKTAIL[-h] --filepath FILEP --filename FILEN --p P_UNMANAGED --l
                  LMBD [--o OUT]
@@ -258,7 +258,7 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
       --o OUT           Output directory for program output
              
 ### version      
-`antibody_pipeline version` prints version number.
+`abopt version` prints version number.
 
 ### cite 
-`antibody_pipeline cite` prints citation information. 
+`abopt cite` prints citation information. 
