@@ -169,18 +169,18 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 
 > `input optional: top int of number of locations to consider`
 
-> `output: DataFrame of constrained features based on antibody specfic PDB locations`
+> `output: file with list of constrained features based on antibody specfic PDB locations`
 
 ### mutate
 `abopt mutate` mutates an antibody given a list of mutations, and generates a structure for each mutation. 
 
 > `input: filename str of molecular structure to mutate`
 
-> `input: repair bool True if structure to mutate requires repair`
-
 > `input: chain str of the chain to repair`
 
-> `input: array list of mutations WT (wild type) amino acid, chain, PDB location, MUT (mutation) amino acid`
+> `input: mutations array list of mutations WT (wild type) amino acid, chain, PDB location, MUT (mutation) amino acid`
+
+> `input: repair bool True if structure to mutate requires repair after mutating`
 
 > `output: PDB file of molecular structure mutated`
 
@@ -192,17 +192,14 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `input: scantype virus or antibody`
 > `input: chain scan the entire chain`
 > `input: locations range of pdb locations to scan, comma delimited, eg: 400-403,420-423`
-
-> `output: dG of unfolding from molecular structure`
+> `output: file with dG of unfolding from molecular structure`
 
 ### repair
-`abopt repair` repairs an antibody using FoldX RepairPDB. 
+`abopt repair` repairs an antibody for downstream analysis. 
 
 > `input: array of filenames of molecular structures to repair`
-
-> `input: indir input directory`
-
-> `input: outdir output directory`
+> `input: foldx use FoldX RepairPDB standard arguments`
+> `input: path pathname of tool used for repair `
 
 > `output: PDB file of molecular structure mutated`
 
@@ -216,30 +213,32 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 
 > `input: list of chains to scan for epitopes`
 
-> `output: list of epitopes in the form of chain, PDB locations`
+> `output: file with list of epitopes in with chain, PDB locations`
 
 ### energy        
 `abopt energy` generates a matrix of folding energies based on running energy minimization for mutational scanning. The arguments for the energy command are:
 
-> `input: binding ddG or coupling dddG`
+> `input: binding str to calculate binding ddG `
 
-> `input: array of molecular structures`
+> `input: coupling str to calculate coupling dddGs `
 
-> `input: list of specific locations that includes:  WT (wild type) amino acid, chain, PDB location, MUT (mutation) amino acid`
+> `input: locations list of locations to constrain energy calculations, comma delimited, eg: 250-300, 400-410`
 
-> `output: matrix of binding energies, or coupling energies`
+> `input: files array filenames including path of dG unfold files or ddG binding files used for calculation`
+
+> `output: file including matrix of binding energies, or coupling energies`
 
 ### merge 
-`abopt merge` merges energy landscape data for multiple structures
+`abopt merge` merges energy fitness landscape data 
 
-> `input: binding or coupling`
+> `input: files array filenames including pathnames, of ddG binding calculations on molecular structures`
+> `input: normalization str normalization method for binding energies, if any`
+> `output: merged_raw file with a merged matrix of binding energies, or coupling energies`
+> `output: merged_norm file with a merged and normalized matrix of binding energies, or coupling energies`
 
-> `input: array of molecular structures`
-
-> `output: merged matrix of binding energies, or coupling energies`
 
 ### cocktail
-`abopt cocktail ` generates combinations of antibodies that are optimal for mutant viruses 
+`abopt cocktail ` generates antibody cocktails that optimize viral mutant coverage and antibody neutralization 
 
     usage: COCKTAIL[-h] --filepath FILEP --filename FILEN --p P_UNMANAGED --l
                  LMBD [--o OUT]
