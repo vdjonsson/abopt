@@ -172,13 +172,14 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 > `output: file with list of constrained features based on antibody specfic PDB locations`
 
 ### mutate
+
 `abopt mutate` mutates an antibody given a list of mutations, and generates a structure for each mutation. 
 
 > `input: filename str of molecular structure to mutate`
 
 > `input: chain str of the chain to repair`
 
-> `input: mutations array list of mutations WT (wild type) amino acid, chain, PDB location, MUT (mutation) amino acid`
+> `input: mutations array list of mutations in the form WT (wild type) amino acid, chain, PDB location, MUT (mutation) amino acid, eg: TH28I`
 
 > `input: repair bool True if structure to mutate requires repair after mutating`
 
