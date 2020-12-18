@@ -175,12 +175,17 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 
 `abopt mutate` mutates an a structure given a list of mutations, and generates a structure for each mutation/mutation list. 
 
-> `input: filename str of molecular structure to mutate`
-> `input: chain str of the chain to mutate used when mutating locations`
+> `input: filename str of molecular structure to mutate `
+
+> `input: chain str of the chain to mutate used when mutating locations `
+
 > `input: mutations array list of mutations or locations comma delimited, eg: TH28I, YH58F `
+
 > `input: location array list of locations to mutate, all amino acids comma delimited, eg: 28-58, 75 `
+
 > `input: repair bool True if structure(s) to mutate requires repair after mutating`
-> `output: PDB files of mutated and repaired if specfied molecular structures `
+
+> `output: PDB files of mutated and repaired molecular structures `
 
 ### scan 
 `abopt scan` mutational scanning on a subset of locations or a chain.
