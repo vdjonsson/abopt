@@ -191,17 +191,24 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 `abopt scan` mutational scanning on a subset of locations or a chain.
 
 > `input: foldx use foldx for mutational scanning `
+
 > `input: filenames of molecular structures to scan, comma delimited`
+
 > `input: scantype virus or antibody`
+
 > `input: chain scan the entire chain`
+
 > `input: locations range of pdb locations to scan, comma delimited, eg: 400-403,420-423`
+
 > `output: file with dG of unfolding from molecular structure`
 
 ### repair
 `abopt repair` repairs an antibody for downstream analysis. 
 
 > `input: array of filenames of molecular structures to repair`
+
 > `input: foldx use FoldX RepairPDB standard arguments`
+
 > `input: path pathname of tool used for repair `
 
 > `output: PDB file of molecular structure mutated`
@@ -235,8 +242,11 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 `abopt merge` merges energy fitness landscape data 
 
 > `input: files array filenames including pathnames, of ddG binding calculations on molecular structures`
+
 > `input: normalization str normalization method for binding energies, if any`
+
 > `output: merged_raw file with a merged matrix of binding energies, or coupling energies`
+
 > `output: merged_norm file with a merged and normalized matrix of binding energies, or coupling energies`
 
 
