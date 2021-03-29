@@ -28,7 +28,6 @@ Typing `abopt` will produce the following output:
     abopt v 0.1 
     abopt <CMD>
 
-    align         Pseudo align antibody sequences
     distance      Calculate Levenshtein distance between antibody sequences
     estimator     Run estimator on antibody sequences
     map           Map estimator FASTA locations to PDB locations 
@@ -43,13 +42,6 @@ Typing `abopt` will produce the following output:
     version       Prints version information
 
 The usage commands are:
-
-### align
-
-`abopt align` pseudo aligns antibody sequences. The arguments for the align command are:
-
-> `input: sequence heavy and light chains `
-> `output: matrix of aligned sequences`
 
 ### distance
 `abopt distance` generates a matrix of Levenshtein distances between antibodies. 
@@ -159,115 +151,166 @@ Note: the file contained at pdb_filepath/pdb_filename.csv must be able to be loa
 `abopt constrain` constrains the features of an estimator. The arguments for the estimator command are:
  constrain(estimator_file, antibody, cutoff , chain, top):
 
-> `input: filename str of path and filename of estimator`
+    usage: CONSTRAIN [-h] --filename FILEN --antibody AB [--cutoff CUTOFF CUTOFF] [--chain CH] [--topk K] [--o OUT]
 
-> `input: antibody str of antibody name`
+    Constrains the features of an estimator by enforcing cutoff for coefficients, using top - k features, or
+    constraining to certain chain.
 
-> `input: cutoff array of [cutoffmin, cutoffmax] minimum and maximum coefficient value`
-
-> `input optional: chain str of chain name of the molecular structure to constrain`
-
-> `input optional: top int of number of locations to consider`
-
-> `output: file with list of constrained features based on antibody specfic PDB locations`
+    optional arguments:
+      -h, --help            show this help message and exit
+      --filename FILEN      Filepath/filename of estimator
+      --antibody AB         Name of antibody
+      --cutoff CUTOFF CUTOFF
+                            Cutoff array of [cutoffmin, cutoffmax] minimum and maximum coefficient value, please
+                            specify in order: MIN MAX
+      --chain CH            Chain name of molecular structure to constrain
+      --topk K              Top number of locations to consider
+      --o OUT               Output directory for program output
 
 ### mutate
 
 `abopt mutate` mutates an a structure given a list of mutations, and generates a structure for each mutation/mutation list. 
 
-> `input: filename str of molecular structure to mutate `
+    usage: MUTATE [-h] --filename FILEN --chain CHAIN [--mlist_filename MFILEN] [--llist_filename LFILEN] [--repair]
+                  [--o OUT]
 
-> `input: chain str of the chain to mutate used when mutating locations `
+    Mutate a molecular structure.
 
-> `input: mutations array list of mutations or locations comma delimited, eg: TH28I, YH58F `
+    optional arguments:
+      -h, --help            show this help message and exit
+      --filename FILEN      Filepath/filename of molecular structures to mutate
+      --chain CHAIN         Chain on structure to mutate used when mutating locations
+      --mlist_filename MFILEN
+                            Filepath/filename for list of mutations
+      --llist_filename LFILEN
+                            Filepath/filename for list of locations to mutate
+      --repair              Flag to use if structure(s) to mutate require(s) repair after mutation
+      --o OUT               Output directory for program output
+      
 
-> `input: location array list of locations to mutate, all amino acids comma delimited, eg: 28-58, 75 `
+Note: the files at mlist_filename (optional) and llist_filename (optional) must be comma-delimited files of mutations or locations. For example:
 
-> `input: repair bool True if structure(s) to mutate requires repair after mutating`
+> `TH28I, YH58F`
 
-> `output: PDB files of mutated and repaired molecular structures `
+for mlist_filename; OR
+
+> `28-58, 75`
+
+for llist_filename.
 
 ### scan 
 `abopt scan` mutational scanning on a subset of locations or a chain.
 
-> `input: foldx use foldx for mutational scanning `
+    usage: SCAN [-h] [--backend PKG] --filenames FILENS [FILENS ...] --scantype TYPE [--chain]
+                [--llist_filename LFILEN] [--o OUT]
 
-> `input: filenames of molecular structures to scan, comma delimited`
+    Performs mutational scanning on a subset of locations or a chain.
 
-> `input: scantype virus or antibody`
+    optional arguments:
+      -h, --help            show this help message and exit
+      --backend PKG         Software program to use as backend for mutational scanning (i.e. FoldX, Rosetta)
+      --filenames FILENS [FILENS ...]
+                            Filenames of molecular structures to scan
+      --scantype TYPE       Type of structure to scan ("antibody" or "virus")
+      --chain               Flag to indicate to scan the entire chain
+      --llist_filename LFILEN
+                            Filename of location ranges of pdb locations to scan, comma delimited in file
+      --o OUT               Output directory for program output
+      
+Note: the file at llist_filename must be a comma-delimited file of locations. For example:
 
-> `input: chain scan the entire chain`
-
-> `input: locations range of pdb locations to scan, comma delimited, eg: 400-403,420-423`
-
-> `output: file with dG of unfolding from molecular structure`
+> `400-403,420-423`
 
 ### repair
 `abopt repair` repairs an antibody for downstream analysis. 
 
-> `input: array of filenames of molecular structures to repair`
+    usage: REPAIR [-h] [--backend PKG] --filenames FILENS [FILENS ...] --toolpath PATH [--o OUT]
 
-> `input: foldx use FoldX RepairPDB standard arguments`
+    Repairs an antibody using software tool for repairing structures (default: FoldX RepairPDB).
 
-> `input: path pathname of tool used for repair `
-
-> `output: PDB file of molecular structure mutated`
-
+    optional arguments:
+        -h, --help            show this help message and exit
+        --backend PKG         Software program to use as backend for repair (i.e. FoldX, Rosetta)
+        --filenames FILENS [FILENS ...]
+                          Filenames of molecular structures to repair
+        --toolpath PATH       Pathname of tool used for repair
+        --o OUT               Output directory for program output
 
 ### epitope
 `abopt epitope` finds epitope, given an amino acid location for a molecular structure.
 
-> `input: molecular structure`
+    usage: EPITOPE [-h] --filename FILEN --pdb_filename PDBF --chains CH [CH ...]
+                   [--o OUT]
 
-> `input: list of specific locations that includes:  WT (wild type) amino acid, chain, PDB location`
+    Calculate epitopes of given structure
 
-> `input: list of chains to scan for epitopes`
-
-> `output: file with list of epitopes in with chain, PDB locations`
+    optional arguments:
+      -h, --help            show this help message and exit
+      --filename FILEN      Filename of specific locations that includes: WT amino
+                            acid, chain, PDB location
+      --pdb_filename PDBF   Filename including path for molecular structure (PDB
+                            file)
+      --chains CH [CH ...]  List of chains to scan for epitopes
+      --o OUT               Output directory for program output
 
 ### energy        
 `abopt energy` generates a matrix of folding energies based on running energy minimization for mutational scanning. The arguments for the energy command are:
 
-> `input: binding str to calculate binding ddG `
+    usage: ENERGY [-h] --filenames FILENS [FILENS ...] --binding BIND --coupling COUPL [--llist_filename LFILEN]
+              [--o OUT]
 
-> `input: coupling str to calculate coupling dddGs `
+    Generates a matrix of folding energies based on running energy minimization for mutational scanning.
 
-> `input: locations list of locations to constrain energy calculations, comma delimited, eg: 250-300, 400-410`
+    optional arguments:
+      -h, --help            show this help message and exit
+      --filenames FILENS [FILENS ...]
+                            Filenames including path of dG unfold files or ddG binding files used for calculation
+      --binding BIND        String value to calculate binding ddG
+      --coupling COUPL      String value to calculate coupling dddGs
+      --llist_filename LFILEN
+                            Filename of location ranges of pdb locations to constrain energy calculations, comma
+                            delimited in file
+      --o OUT               Output directory for program output
 
-> `input: files array filenames including path of dG unfold files or ddG binding files used for calculation`
+Note: the file at llist_filename must be a comma-delimited file of locations. For example:
 
-> `output: file including matrix of binding energies, or coupling energies`
+> `250-300, 400-410`
 
 ### merge 
 `abopt merge` merges energy fitness landscape data 
 
-> `input: files array filenames including pathnames, of ddG binding calculations on molecular structures`
+    usage: MERGE [-h] --filenames FILENS [FILENS ...] [--norm NORM] [--o OUT]
 
-> `input: normalization str normalization method for binding energies, if any`
+    Merges energy landscape data for multiple structures.
 
-> `output: merged_raw file with a merged matrix of binding energies, or coupling energies`
-
-> `output: merged_norm file with a merged and normalized matrix of binding energies, or coupling energies`
-
+    optional arguments:
+      -h, --help            show this help message and exit
+      --filenames FILENS [FILENS ...]
+                            Filenames including path of ddG binding for merging
+      --norm NORM           Normalization method for binding energies, if any
+      --o OUT               Output directory for program output
 
 ### cocktail
 `abopt cocktail ` generates antibody cocktails that optimize virus mutation coverage and antibody neutralization given fitness landscape data 
 
-    usage: COCKTAIL[-h] --filepath FILEP --filename FILEN --p P_UNMANAGED --l
-                 LMBD [--o OUT]
+    usage: COCKTAIL [-h] --filepath FILEP --filename FILEN --virus_filepath VFILEP --virus_filename VFILEN --p
+                    P_UNMANAGED --g1 GAM1 --g2 GAM2 [--o OUT]
 
-    Uses convex combinatorial optimization to compute optimal antibody cocktail given fitness lansdacpes and desired mutation coverage.
+    Uses convex combinatorial optimization to compute optimal antibody cocktail for provided virus mutants.
 
     optional arguments:
-      -h, --help        show this help message and exit
-      --filepath FILEP  Filepath of fitness matrix dataframe
-      --filename FILEN  Filename of fitness matrix dataframe (do not include file
-                    type extension)
-      --p P_UNMANAGED   Maximum proportion of viruses not covered by the antibody
-                    cocktail
-      --l LMBD          Lambda value to use for penalization of number of
-                    antibodies chosen
-      --o OUT           Output directory for program output
+      -h, --help            show this help message and exit
+      --filepath FILEP      Filepath of fitness matrix dataframe
+      --filename FILEN      Filename of fitness matrix dataframe (do not include file type extension)
+      --virus_filepath VFILEP
+                            Filepath of fitness matrix dataframe for virus mutants
+      --virus_filename VFILEN
+                            Filename of fitness matrix dataframe (do not include file type extension) for virus
+                            mutants
+      --p P_UNMANAGED       Maximum proportion of viruses not covered by the antibody cocktail
+      --g1 GAM1             Gamma 1 value to use for penalization of number of antibodies chosen
+      --g2 GAM2             Gamma 2 value to use for weighting infectivity of virus mutants
+      --o OUT               Output directory for program output
              
 ### version      
 `abopt version` prints version number.
